@@ -1,0 +1,6 @@
+Nombre,Email,Rol,Estado
+"Juan Pérez","juan.perez@email.com","Administrador","Activo"
+"María García","maria.garcia@email.com","Usuario","Activo"
+"Carlos López","carlos.lopez@email.com","Moderador","Inactivo"
+"Ana Rodríguez","ana.rodriguez@email.com","Usuario","Activo"
+"Pedro Martínez","pedro.martinez@email.com","Usuario","Pendiente"

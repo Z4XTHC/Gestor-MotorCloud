@@ -1,0 +1,65 @@
+{
+  "name": "MangoSoft - Sistema de Gestión de Auditorías",
+  "short_name": "MangoSoft",
+  "description": "Sistema de gestión integral para auditorías de riesgo, órdenes de trabajo y documentación SSOMA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F3F4F6",
+  "theme_color": "#F39F23",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/images/adr.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/adr.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "screenshots": [
+    {
+      "src": "/images/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard de MangoSoft en escritorio"
+    },
+    {
+      "src": "/images/screenshot-mobile.png",
+      "sizes": "640x1136",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "MangoSoft en dispositivo móvil"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Inicio",
+      "description": "Acceder al dashboard principal",
+      "url": "/",
+      "icons": [{ "src": "/images/adr.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Auditorías Flash",
+      "short_name": "Flash 72hs",
+      "description": "Crear auditoría flash rápida",
+      "url": "/auditoria-flash",
+      "icons": [{ "src": "/images/adr.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Órdenes",
+      "short_name": "Órdenes",
+      "description": "Ver órdenes de trabajo",
+      "url": "/ordenes",
+      "icons": [{ "src": "/images/adr.png", "sizes": "192x192" }]
+    }
+  ]
+}
