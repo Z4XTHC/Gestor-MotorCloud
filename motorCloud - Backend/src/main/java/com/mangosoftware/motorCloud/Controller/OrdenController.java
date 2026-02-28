@@ -1,10 +1,14 @@
 package com.mangosoftware.motorCloud.Controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,13 +35,28 @@ public class OrdenController {
     }
 
     @PostMapping("/guardar")
-    public ResponseEntity<Orden> guardarOrden(@Valid @RequestBody Orden orden) {
+    public ResponseEntity<Orden> guardarOrden(@Valid @RequestBody Orden orden, BindingResult result) {
+        if (result.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            for (FieldError error : result.getFieldErrors()) {
+                errors.put(error.getField(), error.getDefaultMessage());
+            }
+            return ResponseEntity.badRequest().body(null);
+        }
         Orden nuevaOrden = ordenService.createOrden(orden);
         return ResponseEntity.ok(nuevaOrden);
     }
 
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<Orden> actualizarOrden(@PathVariable Long id, @Valid @RequestBody Orden orden) {
+    public ResponseEntity<Orden> actualizarOrden(@PathVariable Long id, @Valid @RequestBody Orden orden,
+            BindingResult result) {
+        if (result.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            for (FieldError error : result.getFieldErrors()) {
+                errors.put(error.getField(), error.getDefaultMessage());
+            }
+            return ResponseEntity.badRequest().body(null);
+        }
         Orden ordenActualizada = ordenService.updateOrden(id, orden);
         if (ordenActualizada != null) {
             return ResponseEntity.ok(ordenActualizada);
@@ -47,7 +66,15 @@ public class OrdenController {
     }
 
     @PutMapping("/cambiar-estado/{id}")
-    public ResponseEntity<Orden> cambiarEstadoOrden(@PathVariable Long id, @RequestBody Map<String, Boolean> status) {
+    public ResponseEntity<Orden> cambiarEstadoOrden(@PathVariable Long id, @RequestBody Map<String, Boolean> status,
+            BindingResult result) {
+        if (result.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            for (FieldError error : result.getFieldErrors()) {
+                errors.put(error.getField(), error.getDefaultMessage());
+            }
+            return ResponseEntity.badRequest().body(null);
+        }
         Boolean nuevoStatus = status.get("status");
         Orden ordenActualizada = ordenService.changeStatus(id, nuevoStatus);
         if (ordenActualizada != null) {

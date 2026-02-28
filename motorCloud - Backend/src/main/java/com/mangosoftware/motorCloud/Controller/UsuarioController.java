@@ -46,7 +46,7 @@ public class UsuarioController {
             for (FieldError error : result.getFieldErrors()) {
                 errors.put(error.getField(), error.getDefaultMessage());
             }
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errors);
+            return ResponseEntity.badRequest().body(null);
         }
 
         if (usuarioService.existsByUsername(usuario.getUsername())) {
