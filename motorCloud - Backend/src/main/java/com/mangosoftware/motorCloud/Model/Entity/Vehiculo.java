@@ -1,5 +1,6 @@
 package com.mangosoftware.motorCloud.Model.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -44,6 +45,7 @@ public class Vehiculo {
 
     private String patente;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente; // Relación con la entidad Cliente, indicando el propietario del vehículo

@@ -49,6 +49,8 @@ public class WebSecurityConfig {
                                 .authorizeHttpRequests((requests) -> requests
                                                 // Rutas API completamente públicas (sin autenticación)
                                                 .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers("/api/usuario/**").hasAuthority("ADMIN")
+                                                .requestMatchers("/api/clientes/**").hasAnyAuthority("ADMIN", "USER")
                                                 // Recursos estáticos
                                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**",
                                                                 "/static/**")

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { MessageSquare, X, Send } from 'lucide-react';
+import React, { useState } from "react";
+import { MessageSquare, X, Send } from "lucide-react";
 
 interface WhatsAppModalProps {
   order: {
@@ -28,17 +28,19 @@ Puede pasar a retirarlo en nuestro horario de atención:
 📅 Lunes a Viernes: 9:00 - 18:00
 📅 Sábados: 9:00 - 13:00
 
-¡Gracias por confiar en MTS Competición! 🏁`;
+¡Gracias por confiar en Motor Cloud! 🏁`;
 
   const handleSendWhatsApp = async () => {
     setIsLoading(true);
-    
+
     // Simular envío
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     // Aquí se integraría con la API de WhatsApp Business
-    alert(`✅ Mensaje enviado exitosamente a ${order.vehicleInfo.client} (${order.vehicleInfo.phone})`);
-    
+    alert(
+      `✅ Mensaje enviado exitosamente a ${order.vehicleInfo.client} (${order.vehicleInfo.phone})`,
+    );
+
     setIsLoading(false);
     onClose();
   };
@@ -83,7 +85,8 @@ Puede pasar a retirarlo en nuestro horario de atención:
               />
             </div>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">
-              El mensaje se enviará automáticamente al número registrado del cliente
+              El mensaje se enviará automáticamente al número registrado del
+              cliente
             </p>
           </div>
 

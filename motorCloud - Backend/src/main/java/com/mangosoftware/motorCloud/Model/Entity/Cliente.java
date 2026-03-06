@@ -51,7 +51,7 @@ public class Cliente {
 
     private String dni;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Vehiculo> vehiculos; // Relación con la entidad Vehiculo, indicando los vehículos asociados al
                                       // cliente
 

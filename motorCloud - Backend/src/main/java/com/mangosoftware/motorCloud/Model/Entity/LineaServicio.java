@@ -13,7 +13,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * Representa una línea de servicio en el sistema de gestión de taller mecánico.
- * Contiene información sobre la descripción del servicio, el precio y la relación
+ * Contiene información sobre la descripción del servicio, el precio y la
+ * relación
  * con la orden a la que pertenece. La clase incluye anotaciones de JPA para
  * mapearla a una tabla en la base de datos, y utiliza Lombok para generar
  * automáticamente los métodos getters, setters, constructores y otros métodos

@@ -1,2 +1,2 @@
 -- USUARIO PREDETERMINADO
-INSERT INTO `usuarios` (`id`, `apellido`, `nombre`, `password`, `rol`, `status`, `username`) VALUES ('1', NULL, 'Administrador', '$2a$12$cAeGE2eL7rfWi3LQC16ycebZKWEqX87NzXcA6IM3omF8mtDVbyJWm', 'ADMIN', b'1', 'admin'), ('2', NULL, 'Usuario', '$2a$12$kj9HeZ8iJGLr3G8kzDYy7.F/v4kJBuooX8UlPCB7K6HqZKIli0ub6', 'USER', b'1', 'user');
+INSERT INTO usuarios (`nombre`, `password`, `rol`, `status`, `username`) VALUES ('Administrador', '$2a$12$cAeGE2eL7rfWi3LQC16ycebZKWEqX87NzXcA6IM3omF8mtDVbyJWm', 'ADMIN',1, 'admin'), ('Usuario', '$2a$12$kj9HeZ8iJGLr3G8kzDYy7.F/v4kJBuooX8UlPCB7K6HqZKIli0ub6', 'USER', 1, 'user');

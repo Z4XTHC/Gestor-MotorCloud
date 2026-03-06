@@ -5,6 +5,8 @@ export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
+  /** Ícono opcional que aparece a la izquierda del título en el header */
+  icon?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   maxWidth?:
@@ -22,6 +24,8 @@ export interface ModalProps {
   showCloseButton?: boolean;
   closeOnBackdropClick?: boolean;
   closeOnEscape?: boolean;
+  /** Elimina el padding del cuerpo del modal para que el contenido maneje su propio espaciado */
+  noPadding?: boolean;
 }
 
 const maxWidthClasses = {
@@ -57,12 +61,14 @@ export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   title,
+  icon,
   children,
   footer,
   maxWidth = "2xl",
   showCloseButton = true,
   closeOnBackdropClick = true,
   closeOnEscape = true,
+  noPadding = false,
 }) => {
   // Manejar cierre con tecla Escape
   useEffect(() => {
@@ -108,40 +114,47 @@ export const Modal: React.FC<ModalProps> = ({
       aria-labelledby={title ? "modal-title" : undefined}
     >
       <div
-        className={`bg-white dark:bg-dark-surface rounded-2xl shadow-xl ${maxWidthClasses[maxWidth]} w-full max-h-[90vh] overflow-y-auto flex flex-col`}
+        className={`bg-white dark:bg-neutral-800 rounded-xl shadow-strong ${maxWidthClasses[maxWidth]} w-full max-h-[90vh] overflow-hidden flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         {(title || showCloseButton) && (
-          <div className="p-6 border-b border-neutral-light dark:border-dark-bg flex items-start justify-between gap-4">
-            <div className="flex-1">
+          <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-700 shrink-0">
+            <div className="flex items-center gap-3">
+              {icon && (
+                <div className="p-2 bg-primary-100 dark:bg-primary-900/20 rounded-lg">
+                  {icon}
+                </div>
+              )}
               {title && (
-                <h2
+                <h3
                   id="modal-title"
-                  className="text-2xl font-bold text-gray-900 dark:text-dark-text"
+                  className="text-lg font-semibold text-neutral-900 dark:text-white"
                 >
                   {title}
-                </h2>
+                </h3>
               )}
             </div>
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                className="p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
                 aria-label="Cerrar modal"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             )}
           </div>
         )}
 
         {/* Body */}
-        <div className="flex-1 p-6">{children}</div>
+        <div className={`flex-1 overflow-y-auto${noPadding ? "" : " p-6"}`}>
+          {children}
+        </div>
 
         {/* Footer */}
         {footer && (
-          <div className="p-6 border-t border-neutral-light dark:border-dark-bg flex justify-end gap-2">
+          <div className="p-6 border-t border-neutral-200 dark:border-neutral-700 flex justify-end gap-3 shrink-0">
             {footer}
           </div>
         )}
