@@ -21,7 +21,6 @@ export async function obtenerClientes(
     params,
   });
   const data = response.data;
-  console.log("[clienteApi] RAW response:", JSON.stringify(data));
   return Array.isArray(data) ? data : (data?.data ?? []);
 }
 

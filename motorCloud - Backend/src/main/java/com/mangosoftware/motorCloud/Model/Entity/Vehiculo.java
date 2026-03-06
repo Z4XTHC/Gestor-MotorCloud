@@ -1,6 +1,7 @@
 package com.mangosoftware.motorCloud.Model.Entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,10 +15,12 @@ import lombok.NoArgsConstructor;
 
 /**
  * Representa un vehículo en el sistema de gestión de taller mecánico.
- * Contiene información sobre el vehículo, como marca, modelo, año, color y patente.
+ * Contiene información sobre el vehículo, como marca, modelo, año, color y
+ * patente.
  * Además, mantiene una relación con el cliente propietario del vehículo.
  * La clase incluye anotaciones de JPA para mapearla a una tabla en la base de
- * datos, y utiliza Lombok para generar automáticamente los métodos getters, setters,
+ * datos, y utiliza Lombok para generar automáticamente los métodos getters,
+ * setters,
  * constructores y otros métodos comunes.
  * 
  * @author Mangosoftware
@@ -45,7 +48,7 @@ public class Vehiculo {
 
     private String patente;
 
-    @JsonIgnore
+    @JsonIgnoreProperties({"vehiculos", "ordenes"})
     @ManyToOne
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente; // Relación con la entidad Cliente, indicando el propietario del vehículo
