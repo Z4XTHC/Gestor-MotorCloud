@@ -69,7 +69,7 @@ export default function MiPerfil() {
       setFormData({
         nombre: user.nombre || "",
         apellido: user.apellido || "",
-        email: user.email || "",
+        username: user.username || "",
         fotoPerfil: user.fotoPerfil || "",
         firmaDigital: user.firmaDigital || "",
       });
@@ -261,7 +261,7 @@ export default function MiPerfil() {
       setFormData({
         nombre: user.nombre || "",
         apellido: user.apellido || "",
-        email: user.email || "",
+        username: user.username || "",
         fotoPerfil: user.fotoPerfil || "",
         firmaDigital: user.firmaDigital || "",
       });
@@ -584,7 +584,7 @@ export default function MiPerfil() {
                             Rol
                           </p>
                           <p className="font-semibold text-gray-900 dark:text-white">
-                            {user.admin ? "Administrador" : "Técnico"}
+                            {user.rol === "ADMIN" ? "Administrador" : "Usuario"}
                           </p>
                         </div>
                       </div>

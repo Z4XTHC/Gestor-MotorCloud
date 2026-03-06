@@ -7,32 +7,31 @@ export const API_ENDPOINTS = {
 
   // �🔐 Autenticación
   AUTH: {
-    LOGIN: "/api/auth/signin",
+    LOGIN: "/api/auth/login",
     VERIFY_USER: (id: string) => `/api/auth/verify/${id}`,
     FORGOT_PASSWORD: "/api/auth/forgot-password",
     RESET_PASSWORD: (id: string) => `/api/auth/reset-password/${id}`,
     UPDATE_PASSWORD: (id: string) => `/api/auth/update-password/${id}`,
+    CHECK: "/api/auth/check",
+    LOGOUT: "/api/auth/logout",
   },
 
   // 👥 Usuarios
   USERS: {
-    LIST: "/api/users",
-    CREATE: "/api/users",
-    GET: (id: string) => `/api/users/${id}`,
-    UPDATE: (id: string) => `/api/users/${id}`,
-    DELETE: (id: string) => `/api/users/${id}`,
-    RESEND_EMAIL: "/api/users/resend",
+    LIST: "/api/usuarios/",
+    CREATE: "/api/usuarios/guardar",
+    GET: (id: string) => `/api/usuarios/detalles/${id}`,
+    UPDATE: (id: string) => `/api/usuarios/actualizar/${id}`,
+    DELETE: (id: string) => `/api/usuarios/${id}`,
   },
 
   // 🏢 Clientes
   CLIENTES: {
-    LIST: "/api/clientes",
-    CREATE: "/api/clientes",
+    LIST: "/api/clientes/",
+    CREATE: "/api/clientes/guardar",
     GET: (id: string) => `/api/clientes/${id}`,
     UPDATE: (id: string) => `/api/clientes/${id}`,
     DELETE: (id: string) => `/api/clientes/${id}`,
-    RESEND_ACTIVATION: "/api/clientes/resend",
-    RESEND_ACTIVATION_MAIL: "/api/clientes/resend-activation-mail",
   },
 
   // 📋 Órdenes
@@ -61,42 +60,11 @@ export const API_ENDPOINTS = {
     LIST_ALL_CLIENTS: "/api/admin",
     TOGGLE_USER_STATUS: (id: string) => `/api/admin/${id}`,
   },
-
-} as const;
-
-// 📊 Query parameters comunes
-export const QUERY_PARAMS = {
-  EMPLEADOS: {
-    SORT: {
-      ASC: "asc",
-      DESC: "desc",
-    },
-  },
-  ORDENES: {
-    FECHA_INICIO: {
-      ASC: "asc",
-      DESC: "desc",
-    },
-    FECHA_VENCIMIENTO: {
-      ASC: "asc",
-      DESC: "desc",
-    },
-  },
-  CLIENTES: {
-    FILTER_DOCS: "?filter=docs&doc=true",
-  },
 } as const;
 
 // ⚙️ Configuración
 export const REQUEST_TIMEOUT = 120000; // 2 minutos para servidores lentos
 export const MAX_RETRIES = 3;
-
-// 🎭 Roles del sistema
-export const USER_ROLES = {
-  ADMIN: "Admin",
-  TECHNICIAN: "Tecnicos",
-  CLIENT: "Clientes",
-} as const;
 
 // 📎 Tipos de archivos soportados
 export const FILE_TYPES = {

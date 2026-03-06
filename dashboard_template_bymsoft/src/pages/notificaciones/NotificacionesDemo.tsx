@@ -256,7 +256,7 @@ export const NotificacionesDemo = () => {
           >
             <Bell className="w-5 h-5 flex-shrink-0" />
             <p className="flex-1 text-sm">
-              Welcome to <strong>MangoSoft Dashboard</strong> - a beautiful
+             Bienvenido a <strong>Motor Cloud</strong> - a beautiful
               freebie for every web developer.
             </p>
             <button

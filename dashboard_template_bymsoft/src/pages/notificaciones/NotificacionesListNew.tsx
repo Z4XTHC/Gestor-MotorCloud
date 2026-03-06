@@ -89,7 +89,7 @@ export const NotificacionesList = () => {
     }
 
     // Sólo clientes (o admins con cliente) pueden consultar notificaciones.
-    if (!user?.cliente_id) {
+    if (user?.rol === "ADMIN") {
       setNotificaciones([]);
       setLoading(false);
       return;
@@ -535,7 +535,7 @@ export const NotificacionesList = () => {
                   {/* Ícono de tipo */}
                   <div
                     className={`p-2 rounded-lg ${getTipoColor(
-                      notificacion.tipo
+                      notificacion.tipo,
                     )}`}
                   >
                     {getTipoIcon(notificacion.tipo)}
@@ -608,7 +608,7 @@ export const NotificacionesList = () => {
           }}
           onDelete={() => {
             handleDelete(
-              selectedNotificacion._id || selectedNotificacion.id || ""
+              selectedNotificacion._id || selectedNotificacion.id || "",
             );
             setSelectedNotificacion(null);
           }}

@@ -10,273 +10,232 @@ import axiosInstance from "../api/axiosConfig";
 import { API_ENDPOINTS } from "../constants/api";
 import Swal from "sweetalert2";
 
-/**
- * @file AuthContext.tsx
- * @description Contexto de autenticación con modo mock.
- * @version 2.1 (Mock Mode - Original code commented)
- * @date 04/02/2026
- */
-
-/*
-// ===== CÓDIGO ORIGINAL (COMENTADO) - PARA USO FUTURO =====
-// Este código original usa axios y API_ENDPOINTS para consumir servicios reales
-// Descomenta estas funciones cuando conectes a un backend real
-
-// ... código original del AuthContext comentado ...
-// (El código original completo está comentado al final del archivo)
-*/
-
-// ===== FUNCIONES MOCK ACTIVAS =====
-
-// Usuario mock para simulación
-const mockUser: User = {
-  _id: "1",
-  email: "admin@example.com",
-  nombre: "Administrador",
-  apellido: "Sistema",
-  status: "VERIFIED",
-  admin: true,
-  cliente_id: null,
-  tecnico_id: null,
-  role: "Admin",
-};
-
-// Credenciales válidas para login mock
-const VALID_CREDENTIALS = {
-  email: "admin@example.com",
-  password: "123456",
-};
-
 interface AuthContextType {
-  user: User | null;
+  user: any | null;
   loading: boolean;
   locked: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (usuario: string, password: string) => Promise<void>;
   signup: (
     email: string,
     password: string,
     name: string,
     role: string,
   ) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   lockSession: () => void;
   unlockSession: () => void;
-  updateUser: (userData: Partial<User>) => void;
+  updateUser: (userData: Partial<any>) => void;
   isAuthenticated: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-let inactivityTimer: NodeJS.Timeout;
+let inactivityTimer: ReturnType<typeof setTimeout>;
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutos
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [locked, setLocked] = useState(false);
 
   const resetInactivityTimer = () => {
     clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(() => {
-      // En lugar de desconectar al usuario inmediatamente, marcamos la sesión como bloqueada.
-      // Esto permite mostrar la pantalla de desbloqueo sin perder el estado del usuario.
       setLocked(true);
-      Swal.fire({
-        icon: "warning",
-        title: "Sesión expirada",
-        text: "Tu sesión ha expirado por inactividad",
-        confirmButtonColor: "#F39F23",
-      });
+      try {
+        Swal.fire({
+          icon: "warning",
+          title: "Sesión expirada",
+          text: "Tu sesión ha expirado por inactividad",
+          confirmButtonColor: "#F39F23",
+        });
+      } catch (e) {}
     }, INACTIVITY_TIMEOUT);
   };
 
+  const handleStorage = (e: StorageEvent) => {
+    if (!e.key) return;
+    if (e.key === "user") {
+      if (e.newValue) {
+        try {
+          setUser(JSON.parse(e.newValue));
+        } catch (err) {}
+      } else {
+        setUser(null);
+      }
+    }
+    if (e.key === "locked") {
+      setLocked(e.newValue === "true");
+    }
+  };
+
+  // Al montar, verificar sesión en backend (/api/auth/check)
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-    const storedLocked = localStorage.getItem("locked");
-
-    if (token && storedUser) {
+    const init = async () => {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        resetInactivityTimer();
+        const storedUser = localStorage.getItem("user");
+        const storedLocked = localStorage.getItem("locked");
 
-        // Inicializar estado locked desde localStorage (si existe)
-        if (storedLocked === "true") {
-          setLocked(true);
-        } else {
-          setLocked(false);
+        if (storedUser) {
+          try {
+            setUser(JSON.parse(storedUser));
+          } catch (e) {
+            localStorage.removeItem("user");
+          }
         }
 
-        const events = ["mousedown", "keydown", "scroll", "touchstart"];
-        events.forEach((event) => {
-          document.addEventListener(event, resetInactivityTimer);
-        });
+        if (storedLocked === "true") setLocked(true);
 
-        // Escuchar cambios en localStorage para sincronizar entre pestañas
-        const handleStorage = (e: StorageEvent) => {
-          if (!e.key) return;
-          if (e.key === "user") {
-            if (e.newValue) {
-              try {
-                setUser(JSON.parse(e.newValue));
-              } catch (err) {}
-            } else {
-              setUser(null);
-            }
-          }
-          if (e.key === "locked") {
-            setLocked(e.newValue === "true");
-          }
-        };
+        // Registrar listeners de actividad
+        const events = ["mousedown", "keydown", "scroll", "touchstart"];
+        events.forEach((ev) =>
+          document.addEventListener(ev, resetInactivityTimer),
+        );
         window.addEventListener("storage", handleStorage);
+
+        // Comprobar con backend si la sesión es válida
+        try {
+          const res = await axiosInstance.get(API_ENDPOINTS.AUTH.CHECK);
+          if (res?.data?.authenticated) {
+            const serverUser = res.data;
+            const userId = serverUser.id || serverUser.ID || null;
+            // Enriquecer con datos completos del usuario (apellido, rol, status, etc.)
+            let fullUser: any = null;
+            if (userId) {
+              try {
+                const uRes = await axiosInstance.get(
+                  API_ENDPOINTS.USERS.GET(String(userId)),
+                );
+                fullUser = uRes.data;
+              } catch (e) {}
+            }
+            const mapped = {
+              id: userId,
+              username:
+                fullUser?.username ||
+                serverUser.usuario ||
+                serverUser.username ||
+                null,
+              nombre: fullUser?.nombre || serverUser.nombre || null,
+              apellido: fullUser?.apellido || null,
+              rol: fullUser?.rol || null,
+              status: fullUser?.status ?? true,
+            };
+            setUser(mapped);
+            localStorage.setItem("user", JSON.stringify(mapped));
+            resetInactivityTimer();
+          } else {
+            // no autenticado: limpiar localStorage
+            localStorage.removeItem("user");
+          }
+        } catch (err) {
+          // ignore, puede no estar disponible en dev
+        }
 
         setLoading(false);
 
         return () => {
-          events.forEach((event) => {
-            document.removeEventListener(event, resetInactivityTimer);
-          });
+          events.forEach((ev) =>
+            document.removeEventListener(ev, resetInactivityTimer),
+          );
           clearTimeout(inactivityTimer);
           window.removeEventListener("storage", handleStorage);
         };
       } catch (error) {
-        console.error("Error parsing stored user:", error);
-        localStorage.removeItem("token");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("user");
         setLoading(false);
       }
-    } else {
-      setLoading(false);
-    }
+    };
+    init();
   }, []);
 
-  // ===== FUNCIONES MOCK =====
+  const login = async (usuario: string, password: string) => {
+    try {
+      const params = new URLSearchParams();
+      // El backend espera los parámetros `username` y `password` (ver AuthController)
+      params.append("username", usuario);
+      params.append("password", password);
 
-  const login = async (email: string, password: string) => {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await axiosInstance.post(API_ENDPOINTS.AUTH.LOGIN, params, {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      });
 
-    // Validar credenciales mock
-    if (
-      email === VALID_CREDENTIALS.email &&
-      password === VALID_CREDENTIALS.password
-    ) {
-      // Crear tokens mock
-      const mockToken = `mock-jwt-token-${Date.now()}`;
-      const mockRefreshToken = `mock-refresh-token-${Date.now()}`;
+      const data = res.data;
+      if (!data) throw new Error("Respuesta inválida del servidor");
 
-      // Simular respuesta del backend
-      const mockResponse: AuthResponse = {
-        token: mockToken,
-        refreshToken: mockRefreshToken,
-        user: mockUser,
+      if (data.success === false) {
+        throw new Error(data.message || "Credenciales inválidas");
+      }
+
+      // Backend no devuelve token JWT en este proyecto; la sesión se maneja por cookie.
+      const userId = data.id || data.ID || null;
+      // Enriquecer con datos completos del usuario (apellido, rol, status, etc.)
+      let fullUser: any = null;
+      if (userId) {
+        try {
+          const uRes = await axiosInstance.get(
+            API_ENDPOINTS.USERS.GET(String(userId)),
+          );
+          fullUser = uRes.data;
+        } catch (e) {}
+      }
+      const mapped = {
+        id: userId,
+        username: fullUser?.username || data.usuario || usuario,
+        nombre: fullUser?.nombre || data.nombre || null,
+        apellido: fullUser?.apellido || null,
+        rol: fullUser?.rol || null,
+        status: fullUser?.status ?? true,
       };
 
-      const { token, refreshToken, user: userData } = mockResponse;
-
-      localStorage.setItem("token", token);
-      if (refreshToken) {
-        localStorage.setItem("refreshToken", refreshToken);
-      }
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      // Marcar bandera temporal para evitar redirect inmediato por 401 justo después del login
-      try {
-        localStorage.setItem("justLoggedIn", "true");
-        setTimeout(() => {
-          try {
-            localStorage.removeItem("justLoggedIn");
-          } catch (e) {}
-        }, 3000);
-      } catch (e) {}
-
-      // sincronizar locked en localStorage
+      localStorage.setItem("user", JSON.stringify(mapped));
       localStorage.setItem("locked", "false");
-
-      // Emitir evento para que CacheContext limpie la caché antes de setear el usuario
       try {
         window.dispatchEvent(new Event("auth:userChanged"));
       } catch (e) {}
 
-      setUser(userData);
+      setUser(mapped);
       setLocked(false);
       resetInactivityTimer();
 
-      Swal.fire({
-        icon: "success",
-        title: "Bienvenido",
-        text: `Has iniciado sesión correctamente`,
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    } else {
-      throw new Error("Credenciales inválidas. Usa admin@example.com / 123456");
+      try {
+        Swal.fire({
+          icon: "success",
+          title: "Bienvenido",
+          text: `Has iniciado sesión correctamente`,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (e) {}
+    } catch (error: any) {
+      const msg =
+        error?.response?.data?.message ||
+        error.message ||
+        "Error al iniciar sesión";
+      throw new Error(msg);
     }
   };
 
   const signup = async (
-    email: string,
-    password: string,
-    name: string,
-    role: string,
+    _email: string,
+    _password: string,
+    _name: string,
+    _role: string,
   ) => {
-    // Simular delay de red
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-
-    // Simular creación de usuario
-    const newUser: User = {
-      _id: Date.now().toString(),
-      email,
-      nombre: name,
-      apellido: "",
-      status: "VERIFIED",
-      admin: role === "Admin",
-      cliente_id: null,
-      tecnico_id: null,
-      role: role as any,
-    };
-
-    // Crear tokens mock
-    const mockToken = `mock-jwt-token-${Date.now()}`;
-    const mockRefreshToken = `mock-refresh-token-${Date.now()}`;
-
-    const mockResponse: AuthResponse = {
-      token: mockToken,
-      refreshToken: mockRefreshToken,
-      user: newUser,
-    };
-
-    const { token, refreshToken, user: userData } = mockResponse;
-
-    localStorage.setItem("token", token);
-    localStorage.setItem("refreshToken", refreshToken);
-    localStorage.setItem("user", JSON.stringify(userData));
-
-    // Emitir evento para limpiar caché antes de setear nuevo usuario
-    try {
-      window.dispatchEvent(new Event("auth:userChanged"));
-    } catch (e) {}
-
-    setUser(userData);
-    resetInactivityTimer();
-
-    Swal.fire({
-      icon: "success",
-      title: "Cuenta creada",
-      text: "Tu cuenta ha sido creada exitosamente",
-      timer: 2000,
-      showConfirmButton: false,
-    });
+    // El backend actual no expone un endpoint de registro público en AuthController.
+    throw new Error(
+      "Registro no soportado por el backend (implementación pendiente)",
+    );
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
+  const logout = async () => {
+    try {
+      await axiosInstance.post(API_ENDPOINTS.AUTH.LOGOUT);
+    } catch (e) {
+      // ignore errors on logout
+    }
+
     localStorage.removeItem("user");
     localStorage.removeItem("locked");
-    // Avisar al cache que el usuario cambió antes de actualizar el estado
     try {
       window.dispatchEvent(new Event("auth:userChanged"));
     } catch (e) {}
@@ -284,22 +243,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setLocked(false);
     clearTimeout(inactivityTimer);
-    // Mostrar confirmación amigable al cerrar sesión
+
     try {
       Swal.fire({
         icon: "success",
         title: "Sesión cerrada",
         text: "Su sesión fue cerrada con éxito",
-        timer: 1500,
+        timer: 1200,
         showConfirmButton: false,
       });
-    } catch (e) {
-      // no-op
-    }
+    } catch (e) {}
   };
 
   const lockSession = () => {
-    // marcar la sesión como bloqueada sin eliminar token/usuario
     setLocked(true);
     clearTimeout(inactivityTimer);
     try {
@@ -308,7 +264,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const unlockSession = () => {
-    // desbloquear la sesión y reiniciar el timer de inactividad
     setLocked(false);
     resetInactivityTimer();
     try {
@@ -316,7 +271,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (e) {}
   };
 
-  const updateUser = (userData: Partial<User>) => {
+  const updateUser = (userData: Partial<any>) => {
     if (user) {
       const updatedUser = { ...user, ...userData };
       setUser(updatedUser);
@@ -376,42 +331,21 @@ const login = async (email: string, password: string) => {
     const tokenParts = token.split(".");
     const payload = JSON.parse(atob(tokenParts[1]));
 
-    // Preferir los datos que devuelve el backend en `userData` (más fiables)
-    // Evitar llamadas a endpoints admin-only que devuelven 401 para técnicos
+    // Mapear usuario del backend Java con rol ADMIN o USER
     let completeUserData: any = {
-      _id: payload.id,
-      email: email,
-      status: userData?.status || "VERIFIED",
-      admin: false,
-      cliente_id: null,
-      tecnico_id: null,
+      id: userData?.id || payload.id,
+      _id: userData?.id || payload.id,
+      email: userData?.email || email,
+      usuario: userData?.usuario,
+      nombre: userData?.nombre,
+      apellido: userData?.apellido,
+      rol: userData?.rol || "USER", // ADMIN o USER
+      status: userData?.status !== false,
     };
 
-    // Si el backend ya devolvió información de técnico o cliente, úsala directamente
-    if (userData) {
-      if ((userData as any).tecnico) {
-        const t = (userData as any).tecnico;
-        completeUserData = {
-          ...completeUserData,
-          nombre: t.nombre,
-          apellido: t.apellido,
-          tecnico_id: t._id || t.id,
-          admin: false,
-          email: t.email || completeUserData.email,
-        };
-      } else if ((userData as any).cliente) {
-        const c = (userData as any).cliente;
-        completeUserData = {
-          ...completeUserData,
-          nombreFantasia: c.nombreFantasia || c.razonSocial,
-          cliente_id: c._id || c.id,
-          admin: false,
-          email: c.email || completeUserData.email,
-        };
-      } else if ((userData as any).admin) {
-        // Caso admin: usar los datos tal cual
-        completeUserData = { ...completeUserData, ...userData };
-      }
+    // Mantener compatibilidad con referencias antiguas
+    if (completeUserData.rol === "ADMIN") {
+      completeUserData.admin = true;
     }
 
     localStorage.setItem("token", token);

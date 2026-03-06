@@ -45,35 +45,29 @@ export const Header = ({ onMenuClick, collapsed = false }: HeaderProps) => {
   // Determinar el rol del usuario basado en la estructura de MongoDB
   const getUserRole = () => {
     if (!user) return "Usuario";
-    if (user.admin === true) return "Administrador";
-    if (user.tecnico_id) return "Técnico";
-    if (user.cliente_id) return "Cliente";
+    if (user.rol === "ADMIN") return "Administrador";
     return "Usuario";
   };
 
-  // Obtener el nombre para mostrar (email antes del @)
+  // Obtener el nombre para mostrar
   const getDisplayName = () => {
-    if (!user?.email) return "Usuario";
-    return user.email.split("@")[0];
+    if (user?.nombre && user?.apellido) {
+      return `${user.nombre} ${user.apellido}`;
+    }
+    if (user?.usuario) return user.usuario;
+
+    return "Usuario";
   };
 
   // Obtener información detallada para mostrar
   const getUserInfo = () => {
     if (!user) return { role: "Usuario", detail: "" };
 
-    if (user.admin === true) {
-      return { role: "Administrador", detail: "Acceso completo" };
+    if (user.rol === "ADMIN") {
+      return { role: "Administrador", detail: "Acceso completo al sistema" };
     }
 
-    if (user.tecnico_id) {
-      return { role: "Técnico", detail: `ID: ${user.tecnico_id}` };
-    }
-
-    if (user.cliente_id) {
-      return { role: "Cliente", detail: `ID: ${user.cliente_id}` };
-    }
-
-    return { role: "Usuario", detail: "" };
+    return { role: "Usuario", detail: `ID: ${user.id}` };
   };
 
   // Cargar notificaciones no leídas (solo para usuarios cliente)
@@ -322,7 +316,7 @@ export const Header = ({ onMenuClick, collapsed = false }: HeaderProps) => {
           </button>
 
           {/* Notificaciones - Solo para usuarios con cliente_id */}
-          {user?.cliente_id && (
+          {user?.rol !== "ADMIN" && (
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
@@ -419,7 +413,9 @@ export const Header = ({ onMenuClick, collapsed = false }: HeaderProps) => {
               className="flex items-center gap-2 lg:gap-3 p-2 hover:bg-primary-lighter dark:hover:bg-dark-bg rounded-lg transition-colors"
             >
               <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-semibold">
-                {user?.email?.charAt(0).toUpperCase() || "U"}
+                {user?.nombre?.charAt(0).toUpperCase() ||
+                  user?.username?.charAt(0).toUpperCase() ||
+                  "U"}
               </div>
               <div className="hidden lg:block text-left">
                 <p className="text-sm font-medium text-gray-900 dark:text-dark-text">
@@ -438,7 +434,9 @@ export const Header = ({ onMenuClick, collapsed = false }: HeaderProps) => {
                     {getDisplayName()}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    {user?.email}
+                    {user?.nombre
+                      ? `${user.nombre} ${user.apellido || ""}`
+                      : user?.username}
                   </p>
                   <div className="mt-2 flex items-center gap-2">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary dark:bg-dark-primary/10 dark:text-dark-primary">
@@ -460,7 +458,7 @@ export const Header = ({ onMenuClick, collapsed = false }: HeaderProps) => {
                     <User className="w-4 h-4" />
                     <span>Mi Perfil</span>
                   </Link>
-                  {user?.admin === true && (
+                  {user?.rol === "ADMIN" && (
                     <Link
                       to="/configuracion"
                       className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary-lighter dark:hover:bg-dark-bg transition-colors text-gray-700 dark:text-gray-300"
@@ -479,7 +477,7 @@ export const Header = ({ onMenuClick, collapsed = false }: HeaderProps) => {
                       className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary-lighter dark:hover:bg-dark-bg transition-colors text-gray-700 dark:text-gray-300 w-full text-left"
                     >
                       <Download className="w-4 h-4" />
-                      <span>Instalar MangoSoft</span>
+                      <span>Instalar Motor Cloud</span>
                     </button>
                   )}
                   <Link

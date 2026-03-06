@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { LogIn, Mail, Lock } from "lucide-react";
+import { LogIn, User, Lock } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../../components/common/Button";
 import { Input } from "../../components/common/Input";
 import Swal from "sweetalert2";
 
 interface LoginFormData {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -26,7 +26,7 @@ export const Login = () => {
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     try {
-      await login(data.email, data.password);
+      await login(data.username, data.password);
       navigate("/dashboard");
     } catch (error) {
       Swal.fire({
@@ -57,25 +57,21 @@ export const Login = () => {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Correo Electrónico
+            Nombre de Usuario
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
-              type="email"
-              {...register("email", {
-                required: "El correo es requerido",
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: "Correo inválido",
-                },
+              type="text"
+              {...register("username", {
+                required: "El nombre de usuario es requerido",
               })}
               className="w-full pl-10 pr-4 py-3 bg-white dark:bg-dark-bg border border-neutral-light dark:border-dark-bg rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-colors min-h-[44px] dark:text-dark-text"
-              placeholder="correo@ejemplo.com"
+              placeholder="Nombre de usuario"
             />
           </div>
-          {errors.email && (
-            <p className="mt-1 text-sm text-coral">{errors.email.message}</p>
+          {errors.username && (
+            <p className="mt-1 text-sm text-coral">{errors.username.message}</p>
           )}
         </div>
 
@@ -90,8 +86,8 @@ export const Login = () => {
               {...register("password", {
                 required: "La contraseña es requerida",
                 minLength: {
-                  value: 6,
-                  message: "Mínimo 6 caracteres",
+                  value: 4,
+                  message: "Mínimo 4 caracteres",
                 },
               })}
               className="w-full pl-10 pr-4 py-3 bg-white dark:bg-dark-bg border border-neutral-light dark:border-dark-bg rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-colors min-h-[44px] dark:text-dark-text"

@@ -209,7 +209,7 @@ export const AcercaDe = () => {
       <Card>
         <div className="text-center py-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            © 2026 MangoSoft - Dashboard Template
+            © 2026 Motor Cloud. Desarrollado por MangoSoft.
           </p>
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
             Todos los derechos reservados

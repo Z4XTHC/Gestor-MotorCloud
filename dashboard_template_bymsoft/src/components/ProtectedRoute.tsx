@@ -43,23 +43,9 @@ export const ProtectedRoute = ({
   // Validar roles si se especificaron
   if (allowedRoles && allowedRoles.length > 0) {
     const getUserRole = (): string => {
-      if (user?.admin === true) return "admin";
-      if (user?.role === "admin") return "admin";
-      if (
-        Array.isArray((user as any)?.roles) &&
-        (user as any).roles.includes("admin")
-      )
-        return "admin";
-      if (user?.tecnico_id) return "tecnico";
-      if (user?.role === "tecnico") return "tecnico";
-      if (
-        Array.isArray((user as any)?.roles) &&
-        (user as any).roles.includes("tecnico")
-      )
-        return "tecnico";
-      if (user?.cliente_id) return "cliente";
-      if (user?.role === "cliente") return "cliente";
-      return "guest";
+      if (!user) return "guest";
+      if (user?.rol === "ADMIN" || user?.admin === true) return "admin";
+      return "user";
     };
 
     const userRole = getUserRole();

@@ -151,12 +151,10 @@ export const Dashboard = () => {
   };
 
   // Determinar rol del usuario
-  const getUserRole = (): "admin" | "tecnico" | "cliente" | "guest" => {
+  const getUserRole = (): "admin" | "user" | "guest" => {
     if (!user) return "guest";
-    if (user.admin === true) return "admin";
-    if (user.tecnico_id) return "tecnico";
-    if (user.cliente_id) return "cliente";
-    return "guest";
+    if (user.rol === "ADMIN" || user.admin === true) return "admin";
+    return "user";
   };
 
   const userRole = getUserRole();
@@ -202,35 +200,20 @@ export const Dashboard = () => {
 
       if (userRole === "admin") {
         // Estadísticas para Admin - Llamadas en paralelo
-        const [clientesRes, tecnicosRes, ordenesRes] = await Promise.allSettled(
-          [
-            axiosInstance.get(API_ENDPOINTS.CLIENTES.LIST),
-            axiosInstance.get(API_ENDPOINTS.TECNICOS.LIST),
-            axiosInstance.get(API_ENDPOINTS.ORDENES.LIST),
-          ],
-        );
+        const [usuariosRes, ordenesRes] = await Promise.allSettled([
+          axiosInstance.get(API_ENDPOINTS.USERS.LIST),
+          axiosInstance.get(API_ENDPOINTS.ORDENES.LIST),
+        ]);
 
-        if (clientesRes.status === "fulfilled") {
-          const clientes = Array.isArray(clientesRes.value.data)
-            ? clientesRes.value.data
-            : clientesRes.value.data.data || [];
+        if (usuariosRes.status === "fulfilled") {
+          const usuarios = Array.isArray(usuariosRes.value.data)
+            ? usuariosRes.value.data
+            : usuariosRes.value.data.data || [];
           stats.push({
-            valor: clientes.length,
-            label: "Clientes Registrados",
-            icono: <Building2 className="w-5 h-5" />,
+            valor: usuarios.length,
+            label: "Usuarios Registrados",
+            icono: <Users className="w-5 h-5" />,
             color: "text-primary",
-          });
-        }
-
-        if (tecnicosRes.status === "fulfilled") {
-          const tecnicos = Array.isArray(tecnicosRes.value.data)
-            ? tecnicosRes.value.data
-            : tecnicosRes.value.data.data || [];
-          stats.push({
-            valor: tecnicos.length,
-            label: "Técnicos Activos",
-            icono: <UserCog className="w-5 h-5" />,
-            color: "text-accent",
           });
         }
 
@@ -535,7 +518,10 @@ export const Dashboard = () => {
           }
         } else {
           // Si es admin o técnico sin cliente, mostrar su nombre:
-          const nombreUsuario = user?.email || "Panel de Administración";
+          const nombreUsuario =
+            user?.nombre && user?.apellido
+              ? `${user.nombre} ${user.apellido}`
+              : user?.username || "Panel de Administración";
 
           setNombreEmpresa(nombreUsuario);
           // Usuario admin sin cliente asociado
@@ -548,8 +534,8 @@ export const Dashboard = () => {
         if (userRole === "cliente") {
           // Solo clientes ven notificaciones
           await fetchNotificaciones();
-        } else if (userRole === "admin" || userRole === "tecnico") {
-          // Admin y técnicos ven actividades recientes del sistema
+        } else if (userRole === "admin") {
+          // Admin ve actividades recientes del sistema
           await fetchActividadesRecientes();
         }
 
@@ -557,9 +543,9 @@ export const Dashboard = () => {
         try {
           const novedadesTemp: Novedad[] = [];
 
-          // Obtener últimas capacitaciones (solo para clientes o admins)
+          // Obtener últimas capacitaciones (solo para admins)
           try {
-            if (user?.cliente_id || user?.admin) {
+            if (user?.rol === "ADMIN" || user?.admin) {
               const capacitacionesResponse = await axiosInstance.get(
                 API_ENDPOINTS.CAPACITACIONES.LIST,
               );
@@ -620,8 +606,7 @@ export const Dashboard = () => {
             novedadesTemp.push({
               id: "default-1",
               titulo: "Bienvenido al Sistema",
-              descripcion:
-                "Sistema de Gestión Empresarial - Su plataforma está lista para usar",
+              descripcion: "Sistema de Gestión - Dashboard Template",
               fecha: new Date().toISOString(),
               tipo: "success",
             });

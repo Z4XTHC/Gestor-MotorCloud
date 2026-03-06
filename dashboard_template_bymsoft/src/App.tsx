@@ -26,6 +26,8 @@ import MiPerfil from "./pages/miPerfil";
 import SamplePage1 from "./pages/SamplePage1";
 import SamplePage2 from "./pages/SamplePage2";
 import SamplePage3 from "./pages/SamplePage3";
+import { UsuariosList } from "./pages/usuarios/UsuariosList";
+import { ClienteList, ClientesList } from "./pages/clientes/ClientesList";
 
 function App() {
   return (
@@ -107,6 +109,28 @@ function App() {
                   <ProtectedRoute>
                     <MainLayout>
                       <NotificacionesList />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/clientes"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <MainLayout>
+                      <ClientesList />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/usuarios"
+                element={
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <MainLayout>
+                      <UsuariosList />
                     </MainLayout>
                   </ProtectedRoute>
                 }

@@ -1,24 +1,21 @@
-import clienteApi from "../../api/clienteApi";
+import { eliminarCliente } from "../../api/clienteApi";
 import Swal from "sweetalert2";
 
-export const confirmarEliminarCliente = async (
-  id: string,
-  onSuccess: () => void
-) => {
+export const confirmarEliminarClientes = async (id: string, onSuccess: () => void) => {
   const result = await Swal.fire({
     title: "¿Estás seguro?",
-    text: "Esta acción no se puede deshacer.",
+    text: "Esta acción eliminará al cliente de forma permanente.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#F39F23",
-    cancelButtonColor: "#f4ac9c",
+    cancelButtonColor: "#6b7280",
     confirmButtonText: "Sí, eliminar",
     cancelButtonText: "Cancelar",
   });
 
   if (result.isConfirmed) {
     try {
-      await clienteApi.eliminarCliente(id);
+      await eliminarCliente(id);
       Swal.fire({
         icon: "success",
         title: "Eliminado",
@@ -26,9 +23,8 @@ export const confirmarEliminarCliente = async (
         timer: 2000,
         showConfirmButton: false,
       });
-      onSuccess(); // Refrescar la lista de clientes
-    } catch (error) {
-      console.error("Error deleting cliente:", error);
+      onSuccess();
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Error",

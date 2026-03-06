@@ -1,35 +1,58 @@
 /**
- * @file src/types/auth.ts
- * @description Interfaces y tipos relacionados con la autenticación.
- * @version 1.0
- * @date 25/12/2025
+ * @file auth.ts
+ * @description Tipos e interfaces para Autenticación
+ * @version 2.0
+ * @date 28/02/2026
  */
 
-/**
- * Representa la estructura del usuario que devuelve el API al autenticarse.
- * Se puede expandir con más campos si es necesario.
- */
-export interface AuthUser {
-  id: string;
-  nombre: string;
-  apellido: string;
-  email: string;
-  roles: string[];
-}
+import { Usuario } from "./usuario";
 
 /**
- * Define las credenciales requeridas para el inicio de sesión.
+ * Credenciales para login
  */
 export interface LoginCredentials {
-  email: string;
+  username: string;
   password: string;
 }
 
 /**
- * Define la estructura de la respuesta del endpoint de login.
+ * Respuesta de login
  */
 export interface LoginResponse {
-  user: AuthUser;
+  user: Usuario;
+  accessToken: string;
+  refreshToken?: string;
+}
+
+/**
+ * Respuesta de verificación de sesión
+ */
+export interface AuthCheckResponse {
+  authenticated: boolean;
+  user?: Usuario;
+  message?: string;
+}
+
+/**
+ * Respuesta de forgot password
+ */
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+/**
+ * Datos para reset de password
+ */
+export interface ResetPasswordData {
   token: string;
-  refreshToken: string;
+  newPassword: string;
+}
+
+/**
+ * Respuesta de reset password
+ */
+export interface ResetPasswordResponse {
+  success: boolean;
+  message: string;
 }

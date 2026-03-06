@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Mail, AlertTriangle } from "lucide-react";
 import { Button } from "../../components/common/Button";
-import { solicitarReseteoPassword } from "../../api/authApi";
+import { forgotPassword } from "../../api/authApi";
 import Swal from "sweetalert2";
 
 interface FormData {
@@ -22,7 +22,7 @@ export const ForgotPassword = () => {
   const onSubmit = async (data: FormData) => {
     setLoading(true);
     try {
-      await solicitarReseteoPassword(data.email);
+      await forgotPassword(data.email);
       Swal.fire({
         icon: "success",
         title: "Enviado",

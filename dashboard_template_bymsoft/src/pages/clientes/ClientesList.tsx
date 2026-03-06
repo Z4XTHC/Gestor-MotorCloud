@@ -17,46 +17,44 @@ import { Loading } from "../../components/common/Loading";
 import { Input } from "../../components/common/Input";
 import { SearchableSelect } from "../../components/common/SearchableSelect";
 import { Column, Table } from "../../components/common/Table";
-import { Usuario } from "../../types/usuario";
-import {
-  obtenerUsuarios,
-  actualizarEstadoUsuario,
-} from "../../api/userApi";
 import Swal from "sweetalert2";
-import { UsuariosDetalles } from "./UsuariosDetalles";
-import { UsuariosForm } from "./UsuariosForm";
-import { confirmarEliminarUsuario } from "./UsuariosConfirm";
 import { showError } from "../../components/common/SweetAlert";
+import { Cliente } from "../../types/cliente";
+import {
+  obtenerClientes,
+  actualizarEstadoCliente,
+} from "../../api/clienteApi";
+import { ClientesDetalles } from "./ClientesDetalles";
+import { ClientesForm } from "./ClientesForm";
+import { confirmarEliminarClientes } from "./ClientesConfirm";
 
-type SortField = "nombre" | "apellido" | "username" | "rol" | "status";
+type SortField = "id" | "dni" | "nombre" | "apellido" | "email" | "telefono" | "direccion" | "status";
 type SortDirection = "asc" | "desc" | null;
 
-export const UsuariosList = () => {
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+export const ClientesList = () => {
+  const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [rolFilter, setRolFilter] = useState("");
   const [estadoFilter, setEstadoFilter] = useState("");
-  const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
-  const [editingUsuario, setEditingUsuario] = useState<Usuario | null>(null);
+  const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
+  const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [sortField, setSortField] = useState<SortField | null>("nombre");
+  const [sortField, setSortField] = useState<SortField | null>("apellido");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
-  const fetchUsuarios = async () => {
+  const fetchClientes = async () => {
     setLoading(true);
     try {
-      const data = await obtenerUsuarios();
-      setUsuarios(data);
-    } catch (_) {
-      setUsuarios([]);
+      const data = await obtenerClientes();
+      setClientes(data);
+    } catch {
+      setClientes([]);
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "No se pudieron cargar los usuarios",
+        text: "No se pudieron cargar los clientes",
         confirmButtonColor: "#F39F23",
       });
     } finally {
@@ -65,36 +63,40 @@ export const UsuariosList = () => {
   };
 
   useEffect(() => {
-    fetchUsuarios();
+    fetchClientes();
   }, []);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, rolFilter, estadoFilter, itemsPerPage]);
+  }, [search, estadoFilter, itemsPerPage]);
 
   const columnas: Column[] = [
-    { key: "nombre", label: "Nombre", sortable: true },
-    { key: "apellido", label: "Apellido", sortable: true },
-    { key: "username", label: "Usuario", sortable: true },
-    { key: "rol", label: "Rol", align: "center", sortable: true },
-    { key: "status", label: "Estado", align: "center", sortable: true },
-    { key: "acciones", label: "Acciones", align: "center" },
+    { key: "dni",      label: "DNI",       sortable: true },
+    { key: "nombre",   label: "Nombre",    sortable: true },
+    { key: "apellido", label: "Apellido",  sortable: true },
+    { key: "email",    label: "Email",     sortable: true },
+    { key: "telefono", label: "Teléfono",  sortable: true },
+    { key: "direccion",label: "Dirección", sortable: true },
+    { key: "status",   label: "Estado",    align: "center", sortable: true },
+    { key: "acciones", label: "Acciones",  align: "center" },
   ];
 
   const filteredAndSortedData = useMemo(() => {
-    let filtered = usuarios.filter((u) => {
+    let filtered = clientes.filter((c) => {
       if (search) {
         const s = search.toLowerCase();
         const ok =
-          u.nombre?.toLowerCase().includes(s) ||
-          u.apellido?.toLowerCase().includes(s) ||
-          u.username?.toLowerCase().includes(s);
+          c.dni?.toLowerCase().includes(s) ||
+          c.nombre?.toLowerCase().includes(s) ||
+          c.apellido?.toLowerCase().includes(s) ||
+          c.email?.toLowerCase().includes(s) ||
+          c.telefono?.toLowerCase().includes(s) ||
+          c.direccion?.toLowerCase().includes(s);
         if (!ok) return false;
       }
-      if (rolFilter && u.rol !== rolFilter) return false;
       if (estadoFilter !== "") {
-        if (estadoFilter === "activo" && !u.status) return false;
-        if (estadoFilter === "inactivo" && u.status) return false;
+        if (estadoFilter === "activo" && !c.status) return false;
+        if (estadoFilter === "inactivo" && c.status) return false;
       }
       return true;
     });
@@ -104,26 +106,14 @@ export const UsuariosList = () => {
         let aVal: string | number = "";
         let bVal: string | number = "";
         switch (sortField) {
-          case "nombre":
-            aVal = a.nombre?.toLowerCase() ?? "";
-            bVal = b.nombre?.toLowerCase() ?? "";
-            break;
-          case "apellido":
-            aVal = a.apellido?.toLowerCase() ?? "";
-            bVal = b.apellido?.toLowerCase() ?? "";
-            break;
-          case "username":
-            aVal = a.username?.toLowerCase() ?? "";
-            bVal = b.username?.toLowerCase() ?? "";
-            break;
-          case "rol":
-            aVal = a.rol?.toLowerCase() ?? "";
-            bVal = b.rol?.toLowerCase() ?? "";
-            break;
-          case "status":
-            aVal = a.status ? 1 : 0;
-            bVal = b.status ? 1 : 0;
-            break;
+          case "id":        aVal = a.id;                          bVal = b.id;                          break;
+          case "dni":       aVal = a.dni?.toLowerCase() ?? "";    bVal = b.dni?.toLowerCase() ?? "";    break;
+          case "nombre":    aVal = a.nombre?.toLowerCase() ?? ""; bVal = b.nombre?.toLowerCase() ?? ""; break;
+          case "apellido":  aVal = a.apellido?.toLowerCase() ?? "";bVal = b.apellido?.toLowerCase() ?? "";break;
+          case "email":     aVal = a.email?.toLowerCase() ?? "";  bVal = b.email?.toLowerCase() ?? "";  break;
+          case "telefono":  aVal = a.telefono?.toLowerCase() ?? "";bVal = b.telefono?.toLowerCase() ?? "";break;
+          case "direccion": aVal = a.direccion?.toLowerCase() ?? "";bVal = b.direccion?.toLowerCase() ?? "";break;
+          case "status":    aVal = a.status ? 1 : 0;              bVal = b.status ? 1 : 0;              break;
         }
         if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
         if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
@@ -131,7 +121,7 @@ export const UsuariosList = () => {
       });
     }
     return filtered;
-  }, [usuarios, search, rolFilter, estadoFilter, sortField, sortDirection]);
+  }, [clientes, search, estadoFilter, sortField, sortDirection]);
 
   const totalItems = filteredAndSortedData.length;
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -156,15 +146,15 @@ export const UsuariosList = () => {
   };
 
   const handleDelete = async (id: number) => {
-    await confirmarEliminarUsuario(String(id), fetchUsuarios);
+    await confirmarEliminarClientes(String(id), fetchClientes);
   };
 
-  const handleToggleStatus = async (usuario: Usuario) => {
-    const nuevoEstado = !usuario.status;
+  const handleToggleStatus = async (cliente: Cliente) => {
+    const nuevoEstado = !cliente.status;
     const accion = nuevoEstado ? "activar" : "desactivar";
     const result = await Swal.fire({
-      title: `¿${nuevoEstado ? "Activar" : "Desactivar"} usuario?`,
-      text: `¿Desea ${accion} a ${usuario.nombre} ${usuario.apellido ?? ""}?`,
+      title: `¿${nuevoEstado ? "Activar" : "Desactivar"} cliente?`,
+      text: `¿Desea ${accion} a ${cliente.nombre} ${cliente.apellido}?`,
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#F39F23",
@@ -174,26 +164,26 @@ export const UsuariosList = () => {
     });
     if (!result.isConfirmed) return;
     try {
-      await actualizarEstadoUsuario({ id: String(usuario.id), active: nuevoEstado });
+      await actualizarEstadoCliente({ id: String(cliente.id), status: nuevoEstado });
       Swal.fire({
         icon: "success",
         title: nuevoEstado ? "Activado" : "Desactivado",
-        text: `El usuario fue ${nuevoEstado ? "activado" : "desactivado"} correctamente.`,
+        text: `El cliente fue ${nuevoEstado ? "activado" : "desactivado"} correctamente.`,
         timer: 1800,
         showConfirmButton: false,
       });
-      fetchUsuarios();
-    } catch (_) {
-      showError("Error", `No se pudo ${accion} el usuario.`);
+      fetchClientes();
+    } catch {
+      showError("Error", `No se pudo ${accion} el cliente.`);
     }
   };
 
-  const handleEditFromDetails = (u: Usuario) => {
-    setSelectedUsuario(null);
-    setEditingUsuario(u);
+  const handleEditFromDetails = (c: Cliente) => {
+    setSelectedCliente(null);
+    setEditingCliente(c);
   };
 
-  if (loading) return <Loading message="Cargando usuarios..." />;
+  if (loading) return <Loading message="Cargando clientes..." />;
 
   return (
     <div className="space-y-6">
@@ -201,73 +191,52 @@ export const UsuariosList = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-dark-text mb-1">
-            Usuarios
+            Clientes
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Gestión de usuarios del sistema
+            Gestión de clientes del sistema
           </p>
         </div>
-        <Button
-          icon={<Plus className="w-5 h-5" />}
-          onClick={() => setShowCreateModal(true)}
-        >
-          Nuevo Usuario
+        <Button icon={<Plus className="w-5 h-5" />} onClick={() => setShowCreateModal(true)}>
+          Nuevo Cliente
         </Button>
       </div>
 
       <Card>
         <div className="mb-6 space-y-4">
-          {/* Búsqueda y filtros */}
+          {/* Filtros */}
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 min-w-0">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Buscar por nombre, apellido o usuario..."
+                  placeholder="Buscar por DNI, nombre, apellido, email, teléfono o dirección..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10 w-full"
                 />
               </div>
             </div>
-            <div className="flex flex-row gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                  Rol:
-                </span>
-                <SearchableSelect
-                  value={rolFilter}
-                  onChange={setRolFilter}
-                  options={[
-                    { value: "", label: "Todos los roles" },
-                    { value: "ADMIN", label: "Administrador" },
-                    { value: "USER", label: "Usuario" },
-                  ]}
-                  placeholder="Filtrar rol"
-                  className="min-w-[150px]"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                  Estado:
-                </span>
-                <SearchableSelect
-                  value={estadoFilter}
-                  onChange={setEstadoFilter}
-                  options={[
-                    { value: "", label: "Todos" },
-                    { value: "activo", label: "Activo" },
-                    { value: "inactivo", label: "Inactivo" },
-                  ]}
-                  placeholder="Filtrar estado"
-                  className="min-w-[130px]"
-                />
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                Estado:
+              </span>
+              <SearchableSelect
+                value={estadoFilter}
+                onChange={setEstadoFilter}
+                options={[
+                  { value: "", label: "Todos" },
+                  { value: "activo", label: "Activo" },
+                  { value: "inactivo", label: "Inactivo" },
+                ]}
+                placeholder="Filtrar estado"
+                className="min-w-[130px]"
+              />
             </div>
           </div>
 
-          {/* Items por página y total */}
+          {/* Items por página y contador */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600 dark:text-gray-400">Mostrar:</span>
@@ -275,7 +244,7 @@ export const UsuariosList = () => {
                 value={itemsPerPage.toString()}
                 onChange={(v) => setItemsPerPage(Number(v))}
                 options={[
-                  { value: "5", label: "5" },
+                  { value: "5",  label: "5" },
                   { value: "10", label: "10" },
                   { value: "15", label: "15" },
                   { value: "20", label: "20" },
@@ -286,7 +255,7 @@ export const UsuariosList = () => {
               <span className="text-sm text-gray-600 dark:text-gray-400">registros por página</span>
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              Total: {totalItems} usuario{totalItems !== 1 ? "s" : ""}
+              Total: {totalItems} cliente{totalItems !== 1 ? "s" : ""}
             </div>
           </div>
         </div>
@@ -297,9 +266,9 @@ export const UsuariosList = () => {
           data={paginatedData}
           loading={loading}
           search={search}
-          isFiltering={!!search || !!rolFilter || !!estadoFilter}
+          isFiltering={!!search || !!estadoFilter}
           emptyMessage={(s) =>
-            s ? `No se encontraron resultados para "${s}"` : "No hay usuarios registrados"
+            s ? `No se encontraron resultados para "${s}"` : "No hay clientes registrados"
           }
           onSort={handleSort}
           getSortIcon={getSortIcon}
@@ -308,73 +277,69 @@ export const UsuariosList = () => {
             setCurrentPage,
             itemsPerPage,
             totalItems,
-            label: "usuarios",
+            label: "clientes",
           }}
-          renderRow={(u) => (
+          renderRow={(c) => (
             <>
               <td className="py-4 px-4 text-gray-900 dark:text-dark-text font-medium">
-                {u.nombre}
+                {c.dni || "-"}
+              </td>
+              <td className="py-4 px-4 text-gray-900 dark:text-dark-text">
+                {c.nombre}
               </td>
               <td className="py-4 px-4 text-gray-600 dark:text-gray-400">
-                {u.apellido || "-"}
+                {c.apellido}
               </td>
               <td className="py-4 px-4 text-gray-600 dark:text-gray-400">
-                {u.username}
+                {c.email || "-"}
+              </td>
+              <td className="py-4 px-4 text-gray-600 dark:text-gray-400">
+                {c.telefono || "-"}
+              </td>
+              <td className="py-4 px-4 text-gray-600 dark:text-gray-400 max-w-[180px] truncate" title={c.direccion}>
+                {c.direccion || "-"}
               </td>
               <td className="py-4 px-4 text-center">
                 <span
-                  className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                    u.rol === "ADMIN"
-                      ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                      : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                  }`}
+                  className={
+                    c.status
+                      ? "inline-block px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      : "inline-block px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                  }
                 >
-                  {u.rol === "ADMIN" ? "Administrador" : "Usuario"}
-                </span>
-              </td>
-              <td className="py-4 px-4 text-center">
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${
-                    u.status
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                  }`}
-                >
-                  {u.status ? "Activo" : "Inactivo"}
+                  {c.status ? "Activo" : "Inactivo"}
                 </span>
               </td>
               <td className="py-4 px-4">
                 <div className="flex items-center justify-center gap-2">
                   <button
-                    onClick={() => setSelectedUsuario(u)}
+                    onClick={() => setSelectedCliente(c)}
                     className="p-2 hover:bg-primary-lighter dark:hover:bg-dark-bg rounded-lg transition-colors text-blue-600"
                     title="Ver detalles"
                   >
                     <Eye className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => setEditingUsuario(u)}
+                    onClick={() => setEditingCliente(c)}
                     className="p-2 hover:bg-primary-lighter dark:hover:bg-dark-bg rounded-lg transition-colors text-primary dark:text-dark-primary"
                     title="Editar"
                   >
                     <Edit className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => handleToggleStatus(u)}
-                    className={`p-2 hover:bg-primary-lighter dark:hover:bg-dark-bg rounded-lg transition-colors ${
-                      u.status ? "text-green-600" : "text-gray-400"
-                    }`}
-                    title={u.status ? "Desactivar usuario" : "Activar usuario"}
+                    onClick={() => handleToggleStatus(c)}
+                    className={`p-2 hover:bg-primary-lighter dark:hover:bg-dark-bg rounded-lg transition-colors ${c.status ? "text-green-600" : "text-gray-400"}`}
+                    title={c.status ? "Desactivar cliente" : "Activar cliente"}
                   >
-                    {u.status ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+                    {c.status ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
                   </button>
-                 {/*  <button
-                    onClick={() => handleDelete(u.id)}
+                  <button
+                    onClick={() => handleDelete(c.id)}
                     className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors text-red-500"
                     title="Eliminar"
                   >
                     <Trash2 className="w-5 h-5" />
-                  </button> */}
+                  </button>
                 </div>
               </td>
             </>
@@ -382,26 +347,26 @@ export const UsuariosList = () => {
         />
       </Card>
 
-      {selectedUsuario && (
-        <UsuariosDetalles
-          usuario={selectedUsuario}
-          onClose={() => setSelectedUsuario(null)}
+      {selectedCliente && (
+        <ClientesDetalles
+          cliente={selectedCliente}
+          onClose={() => setSelectedCliente(null)}
           onEdit={handleEditFromDetails}
         />
       )}
 
-      {editingUsuario && (
-        <UsuariosForm
-          usuario={editingUsuario}
-          onClose={() => setEditingUsuario(null)}
-          onSuccess={fetchUsuarios}
+      {editingCliente && (
+        <ClientesForm
+          cliente={editingCliente}
+          onClose={() => setEditingCliente(null)}
+          onSuccess={fetchClientes}
         />
       )}
 
       {showCreateModal && (
-        <UsuariosForm
+        <ClientesForm
           onClose={() => setShowCreateModal(false)}
-          onSuccess={fetchUsuarios}
+          onSuccess={fetchClientes}
         />
       )}
     </div>

@@ -27,7 +27,7 @@ export const UnlockSession = () => {
   }, []);
 
   const onSubmit = async (data: FormData) => {
-    if (!user?.email) {
+    if (!user?.username) {
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -38,7 +38,7 @@ export const UnlockSession = () => {
 
     setLoading(true);
     try {
-      await login(user.email, data.password);
+      await login(user.username, data.password);
       // marcar como desbloqueado y reiniciar timer
       try {
         unlockSession();
@@ -89,7 +89,7 @@ export const UnlockSession = () => {
           <div className="relative">
             <input
               type="text"
-              value={user?.email || ""}
+              value={user?.username || ""}
               readOnly
               className="w-full pl-4 pr-4 py-2 bg-gray-100 dark:bg-dark-bg border border-neutral-light dark:border-dark-bg rounded-lg"
             />

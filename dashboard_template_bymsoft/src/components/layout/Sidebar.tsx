@@ -16,6 +16,8 @@ import {
   X,
   Info,
   Bot,
+  Car,
+  User,
 } from "lucide-react";
 import { useState } from "react";
 import Swal from "sweetalert2";
@@ -71,6 +73,32 @@ const navCategories: NavCategory[] = [
     ],
   },
   {
+    id: "gestion",
+    label: "Gestión",
+    description: "Gestión de usuarios, clientes, vehículos y ordenes",
+    collapsible: true,
+    items: [
+      {
+        path: "/ordenes",
+        label: "Ordenes",
+        icon: <FileText className="w-5 h-5" />,
+        category: "gestion",
+      },
+      {
+        path: "/clientes",
+        label: "Clientes",
+        icon: <User className="w-5 h-5" />,
+        category: "gestion",
+      },
+      {
+        path: "/vehiculos",
+        label: "Vehículos",
+        icon: <Car className="w-5 h-5" />,
+        category: "gestion",
+      },
+    ],
+  },
+  {
     id: "ejemplos",
     label: "Ejemplos",
     description: "Páginas de ejemplo para el template",
@@ -109,6 +137,13 @@ const navCategories: NavCategory[] = [
         category: "configuracion",
       },
       {
+        path: "/usuarios",
+        label: "Usuarios",
+        icon: <Users className="w-5 h-5" />,
+        category: "gestion",
+        roles: ["admin"], // Solo admins pueden ver este item
+      },
+      {
         path: "/perfil",
         label: "Perfil de Usuario",
         icon: <UserCog className="w-5 h-5" />,
@@ -136,6 +171,7 @@ export const Sidebar = ({
   // Estado para controlar submenús colapsables (todas las categorías expandidas por defecto)
   const [expandedCategories, setExpandedCategories] = useState<string[]>([
     "principal",
+    "gestion",
     "ejemplos",
     "configuracion",
   ]);
@@ -143,13 +179,12 @@ export const Sidebar = ({
   // Determinar rol del usuario
   const getUserRole = (): string => {
     if (!user) return "guest";
-    if (user.admin === true) return "admin";
-    if (user.tecnico_id) return "tecnico";
-    if (user.cliente_id) return "cliente";
-    return "guest";
+    if (user.rol === "ADMIN") return "admin";
+    return "user";
   };
 
   const userRole = getUserRole();
+  console.log(getUserRole());
 
   // Filtrar categorías y items según rol del usuario
   const getFilteredCategories = (): NavCategory[] => {
@@ -162,7 +197,7 @@ export const Sidebar = ({
 
           // Lógica especial para notificaciones
           if (item.path === "/notificaciones") {
-            if (user?.admin && !user?.cliente_id) {
+            if (user?.rol === "ADMIN") {
               return false;
             }
           }
@@ -244,7 +279,7 @@ export const Sidebar = ({
               />
               <div className="flex-1">
                 <h1 className="text-white dark:text-dark-text font-bold text-lg">
-                  MangoSoft
+                  Motor Cloud
                 </h1>
                 <p className="text-white/70 dark:text-dark-text/70 text-xs">
                   v1.0

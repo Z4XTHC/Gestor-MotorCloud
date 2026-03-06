@@ -144,12 +144,10 @@ export const Dashboard = () => {
   };
 
   // Determinar rol del usuario
-  const getUserRole = (): "admin" | "tecnico" | "cliente" | "guest" => {
+  const getUserRole = (): "admin" | "user" | "guest" => {
     if (!user) return "guest";
-    if (user.admin === true) return "admin";
-    if (user.tecnico_id) return "tecnico";
-    if (user.cliente_id) return "cliente";
-    return "guest";
+    if (user.rol === "ADMIN" || user.admin === true) return "admin";
+    return "user";
   };
 
   const userRole = getUserRole();
@@ -195,107 +193,20 @@ export const Dashboard = () => {
 
       if (userRole === "admin") {
         // Estadísticas para Admin - Llamadas en paralelo
-        const [clientesRes, tecnicosRes, ordenesRes] = await Promise.allSettled(
+        const [usuariosRes, ordenesRes] = await Promise.allSettled(
           [
-            axiosInstance.get(API_ENDPOINTS.CLIENTES.LIST),
-            axiosInstance.get(API_ENDPOINTS.TECNICOS.LIST),
+            axiosInstance.get(API_ENDPOINTS.USERS.LIST),
             axiosInstance.get(API_ENDPOINTS.ORDENES.LIST),
           ],
         );
 
-        if (clientesRes.status === "fulfilled") {
-          const clientes = Array.isArray(clientesRes.value.data)
-            ? clientesRes.value.data
-            : clientesRes.value.data.data || [];
+        if (usuariosRes.status === "fulfilled") {
+          const usuarios = Array.isArray(usuariosRes.value.data)
+            ? usuariosRes.value.data
+            : usuariosRes.value.data.data || [];
           stats.push({
-            valor: clientes.length,
-            label: "Clientes Registrados",
-            icono: <Building2 className="w-5 h-5" />,
-            color: "text-primary",
-          });
-        }
-
-        if (tecnicosRes.status === "fulfilled") {
-          const tecnicos = Array.isArray(tecnicosRes.value.data)
-            ? tecnicosRes.value.data
-            : tecnicosRes.value.data.data || [];
-          stats.push({
-            valor: tecnicos.length,
-            label: "Técnicos Activos",
-            icono: <UserCog className="w-5 h-5" />,
-            color: "text-accent",
-          });
-        }
-
-        if (ordenesRes.status === "fulfilled") {
-          const ordenes = Array.isArray(ordenesRes.value.data)
-            ? ordenesRes.value.data
-            : ordenesRes.value.data.data || [];
-          const ordenesActivas = ordenes.filter(
-            (o: any) => o.estado !== "finalizada",
-          );
-          stats.push({
-            valor: ordenesActivas.length,
-            label: "Órdenes Activas",
-            icono: <ClipboardList className="w-5 h-5" />,
-            color: "text-coral",
-          });
-        }
-      } else if (userRole === "tecnico") {
-        // Estadísticas para Técnico - Llamadas en paralelo
-        const [ordenesRes, auditoriasRes] = await Promise.allSettled([
-          axiosInstance.get(API_ENDPOINTS.ORDENES.LIST),
-          axiosInstance.get(API_ENDPOINTS.AUDITORIA_FLASH.LIST),
-        ]);
-
-        if (ordenesRes.status === "fulfilled") {
-          const ordenes = Array.isArray(ordenesRes.value.data)
-            ? ordenesRes.value.data
-            : ordenesRes.value.data.data || [];
-          const misOrdenes = ordenes.filter(
-            (o: any) => o.tecnico_id === user?.tecnico_id,
-          );
-          stats.push({
-            valor: misOrdenes.length,
-            label: "Órdenes Asignadas",
-            icono: <ClipboardList className="w-5 h-5" />,
-            color: "text-primary",
-          });
-        }
-
-        if (auditoriasRes.status === "fulfilled") {
-          const auditorias = Array.isArray(auditoriasRes.value.data)
-            ? auditoriasRes.value.data
-            : auditoriasRes.value.data.data || [];
-          const auditoriasPendientes = auditorias.filter(
-            (a: any) => a.etapaActual !== "finalizada",
-          );
-          stats.push({
-            valor: auditoriasPendientes.length,
-            label: "Auditorías en Curso",
-            icono: <Zap className="w-5 h-5" />,
-            color: "text-accent",
-          });
-        }
-      } else if (userRole === "cliente") {
-        // Estadísticas para Cliente - Llamadas en paralelo
-        const [empleadosRes, ordenesRes, auditoriasRes] =
-          await Promise.allSettled([
-            axiosInstance.get(API_ENDPOINTS.EMPLEADOS.LIST),
-            axiosInstance.get(API_ENDPOINTS.ORDENES.LIST),
-            axiosInstance.get(API_ENDPOINTS.AUDITORIA_FLASH.LIST),
-          ]);
-
-        if (empleadosRes.status === "fulfilled") {
-          const empleados = Array.isArray(empleadosRes.value.data)
-            ? empleadosRes.value.data
-            : empleadosRes.value.data.data || [];
-          const misEmpleados = empleados.filter(
-            (e: any) => e.cliente_id === user?.cliente_id,
-          );
-          stats.push({
-            valor: misEmpleados.length,
-            label: "Empleados Registrados",
+            valor: usuarios.length,
+            label: "Usuarios Registrados",
             icono: <Users className="w-5 h-5" />,
             color: "text-primary",
           });
@@ -312,19 +223,24 @@ export const Dashboard = () => {
             valor: ordenesActivas.length,
             label: "Órdenes Activas",
             icono: <ClipboardList className="w-5 h-5" />,
-            color: "text-accent",
+            color: "text-coral",
           });
         }
+      } else {
+        // Estadísticas para Usuario Regular
+        const [ordenesRes] = await Promise.allSettled([
+          axiosInstance.get(API_ENDPOINTS.ORDENES.LIST),
+        ]);
 
-        if (auditoriasRes.status === "fulfilled") {
-          const auditorias = Array.isArray(auditoriasRes.value.data)
-            ? auditoriasRes.value.data
-            : auditoriasRes.value.data.data || [];
+        if (ordenesRes.status === "fulfilled") {
+          const ordenes = Array.isArray(ordenesRes.value.data)
+            ? ordenesRes.value.data
+            : ordenesRes.value.data.data || [];
           stats.push({
-            valor: auditorias.length,
-            label: "Auditorías Flash",
-            icono: <Zap className="w-5 h-5" />,
-            color: "text-coral",
+            valor: ordenes.length,
+            label: "Órdenes Totales",
+            icono: <ClipboardList className="w-5 h-5" />,
+            color: "text-primary",
           });
         }
       }
@@ -513,26 +429,13 @@ export const Dashboard = () => {
         // Cargando datos de la página de inicio
 
         // 1. Obtener nombre de empresa desde el cliente_id del usuario
-        if (user?.cliente_id) {
-          try {
-            const clienteResponse = await axiosInstance.get(
-              API_ENDPOINTS.CLIENTES.GET(user.cliente_id),
-            );
-            const nombreFantasia =
-              clienteResponse.data.nombreFantasia || "EMPRESA";
-            setNombreEmpresa(nombreFantasia);
-            // Nombre de empresa cargado
-          } catch {
-            console.warn("⚠️ No se pudo cargar el nombre de la empresa");
-            setNombreEmpresa("EMPRESA");
-          }
+        // Mostrar nombre del usuario
+        if (user?.nombre && user?.apellido) {
+          setNombreEmpresa(`${user.nombre} ${user.apellido}`);
+        } else if (user?.username) {
+          setNombreEmpresa(user.username);
         } else {
-          // Si es admin o técnico sin cliente, mostrar su nombre:
-          const nombreUsuario =
-            user?.email || "MangoSoft - Panel de Administración";
-
-          setNombreEmpresa(nombreUsuario);
-          // Usuario admin sin cliente asociado
+          setNombreEmpresa("MotorCloud System");
         }
 
         // 2. Cargar estadísticas según rol
@@ -542,8 +445,8 @@ export const Dashboard = () => {
         if (userRole === "cliente") {
           // Solo clientes ven notificaciones
           await fetchNotificaciones();
-        } else if (userRole === "admin" || userRole === "tecnico") {
-          // Admin y técnicos ven actividades recientes del sistema
+        } else if (userRole === "admin") {
+          // Admin ve actividades recientes del sistema
           await fetchActividadesRecientes();
         }
 
@@ -551,9 +454,9 @@ export const Dashboard = () => {
         try {
           const novedadesTemp: Novedad[] = [];
 
-          // Obtener últimas capacitaciones (solo para clientes o admins)
+          // Obtener últimas capacitaciones (solo para admins)
           try {
-            if (user?.cliente_id || user?.admin) {
+            if (user?.rol === "ADMIN" || user?.admin) {
               const capacitacionesResponse = await axiosInstance.get(
                 API_ENDPOINTS.CAPACITACIONES.LIST,
               );
@@ -581,9 +484,9 @@ export const Dashboard = () => {
             // Capacitaciones no disponibles
           }
 
-          // Obtener últimas auditorías flash (disponible para cliente, técnico o admin)
+          // Obtener últimas auditorías flash (disponible para admin)
           try {
-            if (user?.cliente_id || user?.tecnico_id || user?.admin) {
+            if (user?.rol === "ADMIN" || user?.admin) {
               const auditoriasResponse = await axiosInstance.get(
                 API_ENDPOINTS.AUDITORIA_FLASH.LIST,
               );
@@ -667,18 +570,11 @@ export const Dashboard = () => {
     if (userRole === "admin") {
       return [
         {
-          ruta: "/clientes",
-          titulo: "Gestionar Clientes",
-          descripcion: "Ver y administrar clientes",
-          icono: <Building2 className="w-6 h-6" />,
+          ruta: "/usuarios",
+          titulo: "Gestionar Usuarios",
+          descripcion: "Ver y administrar usuarios",
+          icono: <Users className="w-6 h-6" />,
           color: "text-primary",
-        },
-        {
-          ruta: "/tecnicos",
-          titulo: "Gestionar Técnicos",
-          descripcion: "Ver técnicos activos",
-          icono: <UserCog className="w-6 h-6" />,
-          color: "text-accent",
         },
         {
           ruta: "/ordenes",
@@ -688,73 +584,49 @@ export const Dashboard = () => {
           color: "text-coral",
         },
         {
-          ruta: "/sucursales",
-          titulo: "Sucursales",
-          descripcion: "Gestionar sucursales",
-          icono: <MapPin className="w-6 h-6" />,
-          color: "text-primary",
-        },
-      ];
-    } else if (userRole === "tecnico") {
-      return [
-        {
-          ruta: "/ordenes",
-          titulo: "Mis Órdenes",
-          descripcion: "Órdenes asignadas",
-          icono: <ClipboardList className="w-6 h-6" />,
-          color: "text-primary",
-        },
-        {
-          ruta: "/auditoria-flash",
-          titulo: "Auditorías Flash",
-          descripcion: "Ver auditorías 72hs",
-          icono: <Zap className="w-6 h-6" />,
+          ruta: "/reportes",
+          titulo: "Reportes",
+          descripcion: "Análisis y estadísticas",
+          icono: <BarChart3 className="w-6 h-6" />,
           color: "text-accent",
         },
         {
-          ruta: "/documentacion",
-          titulo: "Documentación",
-          descripcion: "Archivos y documentos",
-          icono: <FileText className="w-6 h-6" />,
-          color: "text-coral",
-        },
-        {
-          ruta: "/notificaciones",
-          titulo: "Notificaciones",
-          descripcion: "Ver alertas",
-          icono: <Bell className="w-6 h-6" />,
+          ruta: "/configuracion",
+          titulo: "Configuración",
+          descripcion: "Ajustes del sistema",
+          icono: <Settings className="w-6 h-6" />,
           color: "text-primary",
         },
       ];
     } else {
-      // Cliente
+      // Usuario regular
       return [
         {
           ruta: "/ordenes",
-          titulo: "Órdenes de mi Empresa",
-          descripcion: "Ver órdenes activas",
+          titulo: "Mis Órdenes",
+          descripcion: "Ver órdenes asignadas",
           icono: <ClipboardList className="w-6 h-6" />,
           color: "text-primary",
         },
         {
-          ruta: "/empleados",
-          titulo: "Empleados",
-          descripcion: "Gestionar empleados",
-          icono: <Users className="w-6 h-6" />,
+          ruta: "/reportes",
+          titulo: "Mis Reportes",
+          descripcion: "Ver mis reportes",
+          icono: <BarChart3 className="w-6 h-6" />,
           color: "text-accent",
         },
         {
           ruta: "/documentacion",
           titulo: "Documentación",
-          descripcion: "Archivos y certificados",
+          descripcion: "Archivos disponibles",
           icono: <FileText className="w-6 h-6" />,
           color: "text-coral",
         },
         {
-          ruta: "/auditoria-flash",
-          titulo: "Auditorías Flash",
-          descripcion: "Nueva auditoría 72hs",
-          icono: <Zap className="w-6 h-6" />,
+          ruta: "/mi-perfil",
+          titulo: "Mi Perfil",
+          descripcion: "Configuración personal",
+          icono: <Users className="w-6 h-6" />,
           color: "text-primary",
         },
       ];

@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-MotorCloudApplication<motorCloud>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.mangosoftware.motorCloud.MotorCloudApplication",
+      "projectName": "motorCloud",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}

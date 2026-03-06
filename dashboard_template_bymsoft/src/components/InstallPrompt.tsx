@@ -130,7 +130,8 @@ export const InstallPrompt = ({
               {/* Título y descripción */}
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-dark-text mb-2">
-                  Instalar MangoSoft
+                  Instalar Motor Cloud en tu{" "}
+                  {isMobile ? "dispositivo" : "escritorio"}
                 </h2>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Accede más rápido desde tu{" "}

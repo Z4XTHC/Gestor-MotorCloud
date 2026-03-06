@@ -1,38 +1,34 @@
+﻿import { eliminarUsuario } from "../../api/userApi";
 import Swal from "sweetalert2";
-import { eliminarTecnico } from "../../api/tecnicosApi";
 
-export const confirmarEliminarTecnico = async (
-  id: string,
-  onSuccess: () => void
-) => {
+export const confirmarEliminarUsuario = async (id: string, onSuccess: () => void) => {
   const result = await Swal.fire({
     title: "¿Estás seguro?",
-    text: "Esta acción no se puede deshacer",
+    text: "Esta acción no se puede deshacer.",
     icon: "warning",
     showCancelButton: true,
     confirmButtonColor: "#F39F23",
-    cancelButtonColor: "#f4ac9c",
+    cancelButtonColor: "#6b7280",
     confirmButtonText: "Sí, eliminar",
     cancelButtonText: "Cancelar",
   });
 
   if (result.isConfirmed) {
     try {
-      await eliminarTecnico(id);
+      await eliminarUsuario(id);
       Swal.fire({
         icon: "success",
         title: "Eliminado",
-        text: "Técnico eliminado exitosamente",
+        text: "El usuario ha sido eliminado exitosamente.",
         timer: 2000,
         showConfirmButton: false,
       });
       onSuccess();
-    } catch (error) {
-      console.error("Error deleting tecnico:", error);
+    } catch (_) {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "No se pudo eliminar el técnico",
+        text: "No se pudo eliminar el usuario. Inténtalo de nuevo.",
         confirmButtonColor: "#F39F23",
       });
     }
