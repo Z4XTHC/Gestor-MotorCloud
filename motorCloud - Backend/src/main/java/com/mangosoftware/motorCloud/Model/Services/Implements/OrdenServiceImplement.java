@@ -47,16 +47,29 @@ public class OrdenServiceImplement implements iOrdenService {
     public Orden updateOrden(Long id, Orden orden) {
         Orden existingOrden = ordenRepository.findById(id).orElse(null);
         if (existingOrden != null) {
+            existingOrden.setNumeroOrden(orden.getNumeroOrden());
             existingOrden.setDescripcion(orden.getDescripcion());
-            existingOrden.setFechaEntrega(orden.getFechaEntrega());
             existingOrden.setFechaCreacion(orden.getFechaCreacion());
+            existingOrden.setFechaEntrega(orden.getFechaEntrega());
+            existingOrden.setEstado(orden.getEstado());
             existingOrden.setStatus(orden.getStatus());
-            existingOrden.setTotal(orden.getTotal());
             existingOrden.setVehiculo(orden.getVehiculo());
             existingOrden.setUsuario(orden.getUsuario());
-            existingOrden.setLineasServicio(orden.getLineasServicio());
-            existingOrden.setNumeroOrden(orden.getNumeroOrden());
-            existingOrden.actualizarTotal();
+
+            // Reemplazar líneas y establecer referencia bidireccional
+            List<LineaServicio> nuevasLineas = orden.getLineasServicio();
+            if (nuevasLineas != null) {
+                existingOrden.getLineasServicio().clear();
+                for (LineaServicio ls : nuevasLineas) {
+                    ls.setOrden(existingOrden);
+                    existingOrden.getLineasServicio().add(ls);
+                }
+                existingOrden.actualizarTotal();
+            } else {
+                existingOrden.getLineasServicio().clear();
+                existingOrden.setTotal(0.0);
+            }
+
             return ordenRepository.save(existingOrden);
         }
         return null;

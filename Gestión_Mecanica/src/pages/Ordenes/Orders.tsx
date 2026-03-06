@@ -8,6 +8,7 @@ import { SearchableSelect } from "../../components/common/SearchableSelect";
 import { Modal } from "../../components/common/Modal";
 import { obtenerOrdenes } from "../../api/ordenApi";
 import { Orden } from "../../types/orden";
+import { OrderDetalles } from "./OrderDetalles";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -87,6 +88,7 @@ export function Orders() {
   const [ordenes, setOrdenes] = useState<Orden[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedOrden, setSelectedOrden] = useState<Orden | null>(null);
 
   const cargarOrdenes = useCallback(() => {
     setLoading(true);
@@ -195,11 +197,27 @@ export function Orders() {
             </div>
           ) : (
             filteredCards.map((order) => (
-              <OrderCard key={order.id} order={order} />
+              <OrderCard
+                key={order.id}
+                order={order}
+                onViewDetails={() => {
+                  const raw = ordenes.find(
+                    (o) => (o.numeroOrden || `OT-${o.id}`) === order.id,
+                  );
+                  setSelectedOrden(raw ?? null);
+                }}
+              />
             ))
           )}
         </div>
       )}
+
+      {/* Modal Detalles Orden */}
+      <OrderDetalles
+        orden={selectedOrden}
+        onClose={() => setSelectedOrden(null)}
+        onSuccess={() => { cargarOrdenes(); }}
+      />
 
       {/* Modal Nueva Orden */}
       <Modal

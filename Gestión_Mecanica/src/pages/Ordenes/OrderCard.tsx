@@ -3,6 +3,7 @@ import { Calendar, User, Phone, Car, Clock, MessageSquare, CheckCircle } from 'l
 import { WhatsAppModal } from './WhatsAppModal';
 
 interface OrderCardProps {
+  onViewDetails?: () => void;
   order: {
     id: string;
     vehicleInfo: {
@@ -26,7 +27,7 @@ interface OrderCardProps {
   };
 }
 
-export function OrderCard({ order }: OrderCardProps) {
+export function OrderCard({ order, onViewDetails }: OrderCardProps) {
   const [showWhatsApp, setShowWhatsApp] = useState(false);
 
   const getStatusBadge = (status: string) => {
@@ -182,7 +183,10 @@ export function OrderCard({ order }: OrderCardProps) {
               Listo para retirar
             </button>
           )}
-          <button className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+          <button
+            onClick={onViewDetails}
+            className="px-3 py-2 border border-neutral-300 dark:border-neutral-600 text-neutral-700 dark:text-neutral-300 rounded-lg text-sm font-medium hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+          >
             Ver detalles
           </button>
         </div>
