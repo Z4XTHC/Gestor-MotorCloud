@@ -48,7 +48,7 @@ public class Vehiculo {
 
     private String patente;
 
-    @JsonIgnoreProperties({"vehiculos", "ordenes"})
+    @JsonIgnoreProperties({ "vehiculos", "ordenes" })
     @ManyToOne
     @JoinColumn(name = "cliente_id", nullable = false)
     private Cliente cliente; // Relación con la entidad Cliente, indicando el propietario del vehículo
