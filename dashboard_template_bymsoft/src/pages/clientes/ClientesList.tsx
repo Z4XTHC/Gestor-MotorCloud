@@ -20,15 +20,20 @@ import { Column, Table } from "../../components/common/Table";
 import Swal from "sweetalert2";
 import { showError } from "../../components/common/SweetAlert";
 import { Cliente } from "../../types/cliente";
-import {
-  obtenerClientes,
-  actualizarEstadoCliente,
-} from "../../api/clienteApi";
+import { obtenerClientes, actualizarEstadoCliente } from "../../api/clienteApi";
 import { ClientesDetalles } from "./ClientesDetalles";
 import { ClientesForm } from "./ClientesForm";
 import { confirmarEliminarClientes } from "./ClientesConfirm";
 
-type SortField = "id" | "dni" | "nombre" | "apellido" | "email" | "telefono" | "direccion" | "status";
+type SortField =
+  | "id"
+  | "dni"
+  | "nombre"
+  | "apellido"
+  | "email"
+  | "telefono"
+  | "direccion"
+  | "status";
 type SortDirection = "asc" | "desc" | null;
 
 export const ClientesList = () => {
@@ -71,14 +76,14 @@ export const ClientesList = () => {
   }, [search, estadoFilter, itemsPerPage]);
 
   const columnas: Column[] = [
-    { key: "dni",      label: "DNI",       sortable: true },
-    { key: "nombre",   label: "Nombre",    sortable: true },
-    { key: "apellido", label: "Apellido",  sortable: true },
-    { key: "email",    label: "Email",     sortable: true },
-    { key: "telefono", label: "Teléfono",  sortable: true },
-    { key: "direccion",label: "Dirección", sortable: true },
-    { key: "status",   label: "Estado",    align: "center", sortable: true },
-    { key: "acciones", label: "Acciones",  align: "center" },
+    { key: "dni", label: "DNI", sortable: true },
+    { key: "nombre", label: "Nombre", sortable: true },
+    { key: "apellido", label: "Apellido", sortable: true },
+    { key: "email", label: "Email", sortable: true },
+    { key: "telefono", label: "Teléfono", sortable: true },
+    { key: "direccion", label: "Dirección", sortable: true },
+    { key: "status", label: "Estado", align: "center", sortable: true },
+    { key: "acciones", label: "Acciones", align: "center" },
   ];
 
   const filteredAndSortedData = useMemo(() => {
@@ -106,14 +111,38 @@ export const ClientesList = () => {
         let aVal: string | number = "";
         let bVal: string | number = "";
         switch (sortField) {
-          case "id":        aVal = a.id;                          bVal = b.id;                          break;
-          case "dni":       aVal = a.dni?.toLowerCase() ?? "";    bVal = b.dni?.toLowerCase() ?? "";    break;
-          case "nombre":    aVal = a.nombre?.toLowerCase() ?? ""; bVal = b.nombre?.toLowerCase() ?? ""; break;
-          case "apellido":  aVal = a.apellido?.toLowerCase() ?? "";bVal = b.apellido?.toLowerCase() ?? "";break;
-          case "email":     aVal = a.email?.toLowerCase() ?? "";  bVal = b.email?.toLowerCase() ?? "";  break;
-          case "telefono":  aVal = a.telefono?.toLowerCase() ?? "";bVal = b.telefono?.toLowerCase() ?? "";break;
-          case "direccion": aVal = a.direccion?.toLowerCase() ?? "";bVal = b.direccion?.toLowerCase() ?? "";break;
-          case "status":    aVal = a.status ? 1 : 0;              bVal = b.status ? 1 : 0;              break;
+          case "id":
+            aVal = a.id;
+            bVal = b.id;
+            break;
+          case "dni":
+            aVal = a.dni?.toLowerCase() ?? "";
+            bVal = b.dni?.toLowerCase() ?? "";
+            break;
+          case "nombre":
+            aVal = a.nombre?.toLowerCase() ?? "";
+            bVal = b.nombre?.toLowerCase() ?? "";
+            break;
+          case "apellido":
+            aVal = a.apellido?.toLowerCase() ?? "";
+            bVal = b.apellido?.toLowerCase() ?? "";
+            break;
+          case "email":
+            aVal = a.email?.toLowerCase() ?? "";
+            bVal = b.email?.toLowerCase() ?? "";
+            break;
+          case "telefono":
+            aVal = a.telefono?.toLowerCase() ?? "";
+            bVal = b.telefono?.toLowerCase() ?? "";
+            break;
+          case "direccion":
+            aVal = a.direccion?.toLowerCase() ?? "";
+            bVal = b.direccion?.toLowerCase() ?? "";
+            break;
+          case "status":
+            aVal = a.status ? 1 : 0;
+            bVal = b.status ? 1 : 0;
+            break;
         }
         if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
         if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
@@ -125,13 +154,18 @@ export const ClientesList = () => {
 
   const totalItems = filteredAndSortedData.length;
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredAndSortedData.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedData = filteredAndSortedData.slice(
+    startIndex,
+    startIndex + itemsPerPage,
+  );
 
   const handleSort = (field: string) => {
     if (sortField === field) {
       if (sortDirection === "asc") setSortDirection("desc");
-      else if (sortDirection === "desc") { setSortDirection(null); setSortField(null); }
-      else setSortDirection("asc");
+      else if (sortDirection === "desc") {
+        setSortDirection(null);
+        setSortField(null);
+      } else setSortDirection("asc");
     } else {
       setSortField(field as SortField);
       setSortDirection("asc");
@@ -164,7 +198,10 @@ export const ClientesList = () => {
     });
     if (!result.isConfirmed) return;
     try {
-      await actualizarEstadoCliente({ id: String(cliente.id), status: nuevoEstado });
+      await actualizarEstadoCliente({
+        id: String(cliente.id),
+        status: nuevoEstado,
+      });
       Swal.fire({
         icon: "success",
         title: nuevoEstado ? "Activado" : "Desactivado",
@@ -197,7 +234,10 @@ export const ClientesList = () => {
             Gestión de clientes del sistema
           </p>
         </div>
-        <Button icon={<Plus className="w-5 h-5" />} onClick={() => setShowCreateModal(true)}>
+        <Button
+          icon={<Plus className="w-5 h-5" />}
+          onClick={() => setShowCreateModal(true)}
+        >
           Nuevo Cliente
         </Button>
       </div>
@@ -239,12 +279,14 @@ export const ClientesList = () => {
           {/* Items por página y contador */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Mostrar:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Mostrar:
+              </span>
               <SearchableSelect
                 value={itemsPerPage.toString()}
                 onChange={(v) => setItemsPerPage(Number(v))}
                 options={[
-                  { value: "5",  label: "5" },
+                  { value: "5", label: "5" },
                   { value: "10", label: "10" },
                   { value: "15", label: "15" },
                   { value: "20", label: "20" },
@@ -252,7 +294,9 @@ export const ClientesList = () => {
                 placeholder="10"
                 className="min-w-[80px]"
               />
-              <span className="text-sm text-gray-600 dark:text-gray-400">registros por página</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                registros por página
+              </span>
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
               Total: {totalItems} cliente{totalItems !== 1 ? "s" : ""}
@@ -268,7 +312,9 @@ export const ClientesList = () => {
           search={search}
           isFiltering={!!search || !!estadoFilter}
           emptyMessage={(s) =>
-            s ? `No se encontraron resultados para "${s}"` : "No hay clientes registrados"
+            s
+              ? `No se encontraron resultados para "${s}"`
+              : "No hay clientes registrados"
           }
           onSort={handleSort}
           getSortIcon={getSortIcon}
@@ -296,7 +342,10 @@ export const ClientesList = () => {
               <td className="py-4 px-4 text-gray-600 dark:text-gray-400">
                 {c.telefono || "-"}
               </td>
-              <td className="py-4 px-4 text-gray-600 dark:text-gray-400 max-w-[180px] truncate" title={c.direccion}>
+              <td
+                className="py-4 px-4 text-gray-600 dark:text-gray-400 max-w-[180px] truncate"
+                title={c.direccion}
+              >
                 {c.direccion || "-"}
               </td>
               <td className="py-4 px-4 text-center">
@@ -331,7 +380,11 @@ export const ClientesList = () => {
                     className={`p-2 hover:bg-primary-lighter dark:hover:bg-dark-bg rounded-lg transition-colors ${c.status ? "text-green-600" : "text-gray-400"}`}
                     title={c.status ? "Desactivar cliente" : "Activar cliente"}
                   >
-                    {c.status ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+                    {c.status ? (
+                      <ToggleRight className="w-5 h-5" />
+                    ) : (
+                      <ToggleLeft className="w-5 h-5" />
+                    )}
                   </button>
                   <button
                     onClick={() => handleDelete(c.id)}

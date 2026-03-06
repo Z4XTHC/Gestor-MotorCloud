@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.mangosoftware.motorCloud.Model.Entity.LineaServicio;
 import com.mangosoftware.motorCloud.Model.Entity.Orden;
 import com.mangosoftware.motorCloud.Model.Repository.iOrdenRepository;
 import com.mangosoftware.motorCloud.Model.Services.Interfaces.iOrdenService;
@@ -27,6 +28,18 @@ public class OrdenServiceImplement implements iOrdenService {
 
     @Override
     public Orden createOrden(Orden orden) {
+        // Establecer la referencia bidirecional en cada línea de servicio
+        if (orden.getLineasServicio() != null) {
+            for (LineaServicio ls : orden.getLineasServicio()) {
+                ls.setOrden(orden);
+            }
+        }
+        // Calcular total antes de guardar
+        if (orden.getLineasServicio() != null && !orden.getLineasServicio().isEmpty()) {
+            orden.actualizarTotal();
+        } else {
+            orden.setTotal(0.0);
+        }
         return ordenRepository.save(orden);
     }
 

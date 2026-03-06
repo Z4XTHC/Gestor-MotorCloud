@@ -1,5 +1,7 @@
 package com.mangosoftware.motorCloud.Model.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -37,6 +39,7 @@ public class LineaServicio {
 
     private String descripcion;
 
+    @JsonIgnoreProperties({ "lineasServicio", "vehiculo", "usuario" })
     @ManyToOne
     @JoinColumn(name = "orden_id", nullable = false)
     private Orden orden;

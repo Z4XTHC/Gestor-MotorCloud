@@ -37,14 +37,11 @@ export const API_ENDPOINTS = {
 
   // 📋 Órdenes
   ORDENES: {
-    LIST: "/api/ordenes", // Con sort automático
-    CREATE: "/api/ordenes",
-    GET: (id: string) => `/api/ordenes/${id}`,
-    UPDATE: (id: string) => `/api/ordenes/${id}`,
-    DELETE: (id: string) => `/api/ordenes/${id}`,
-    BY_CLIENT: (clienteId: string) => `/api/ordenes/cliente/${clienteId}`,
-    EXPORT_EXCEL: (clienteId: string) => `/api/ordenes/export/${clienteId}`,
-    DASHBOARD_STATS: "/api/ordenes/dashboard-stats",
+    LIST: "/api/ordenes/",
+    CREATE: "/api/ordenes/guardar",
+    GET: (id: string) => `/api/ordenes/detalles/${id}`,
+    UPDATE: (id: string) => `/api/ordenes/actualizar/${id}`,
+    TOGGLE_STATUS: (id: string) => `/api/ordenes/cambiar-estado/${id}`,
   },
 
   // 🔔 Notificaciones
@@ -64,6 +61,7 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string) => `/api/vehiculos/actualizar/${id}`,
     TOGGLE_STATUS: (id: string) => `/api/vehiculos/cambiar-estado/${id}`,
     DELETE: (id: string) => `/api/vehiculos/${id}`,
+    BY_CLIENT: (clienteId: string) => `/api/vehiculos/porCliente/${clienteId}`,
   },
 
   // 👑 Admin

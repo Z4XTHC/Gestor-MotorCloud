@@ -1,7 +1,10 @@
 import { eliminarCliente } from "../../api/clienteApi";
 import Swal from "sweetalert2";
 
-export const confirmarEliminarClientes = async (id: string, onSuccess: () => void) => {
+export const confirmarEliminarClientes = async (
+  id: string,
+  onSuccess: () => void,
+) => {
   const result = await Swal.fire({
     title: "¿Estás seguro?",
     text: "Esta acción eliminará al cliente de forma permanente.",

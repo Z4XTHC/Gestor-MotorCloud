@@ -3,6 +3,8 @@ package com.mangosoftware.motorCloud.Model.Entity;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -45,8 +47,10 @@ public class Orden {
 
     private String numeroOrden;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaCreacion;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaEntrega;
 
     private String descripcion;

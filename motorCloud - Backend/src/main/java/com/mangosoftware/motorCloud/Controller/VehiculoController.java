@@ -89,4 +89,10 @@ public class VehiculoController {
         }
     }
 
+    @GetMapping("/porCliente/{clienteId}")
+    public ResponseEntity<List<Vehiculo>> getVehiculosByCliente(@PathVariable Long clienteId) {
+        List<Vehiculo> vehiculos = vehiculoService.getVehiculosByClienteId(clienteId);
+        return ResponseEntity.ok(vehiculos);
+    }
+
 }

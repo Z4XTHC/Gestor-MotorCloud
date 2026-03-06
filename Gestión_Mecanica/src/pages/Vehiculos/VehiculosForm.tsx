@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import {
   Car,
   Tag,
@@ -9,15 +9,22 @@ import {
   Edit,
   PlusCircle,
   Info,
+  Loader2,
 } from "lucide-react";
 import { Button } from "../../components/common/Button";
 import { Input } from "../../components/common/Input";
 import { SearchableSelect } from "../../components/common/SearchableSelect";
+import { ColorSelect } from "../../components/common/ColorSelect";
+import { COLORES_VEHICULO } from "../../components/common/coloresVehiculo";
 import { showError } from "../../components/common/SweetAlert";
 import { Vehiculo } from "../../types/vehiculo";
 import { Cliente } from "../../types/cliente";
 import { crearVehiculo, actualizarVehiculo } from "../../api/vehiculoApi";
 import { obtenerClientes } from "../../api/clienteApi";
+import {
+  obtenerTodasLasMarcas,
+  obtenerModelosPorMarca,
+} from "../../api/NHTSAapi";
 
 interface VehiculosFormProps {
   vehiculo?: Vehiculo | null;
@@ -38,6 +45,21 @@ export const VehiculosForm = ({
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loadingClientes, setLoadingClientes] = useState(false);
 
+  // ── NHTSA: marcas ──────────────────────────────────────────────────────────
+  const [marcaOptions, setMarcaOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [loadingMarcas, setLoadingMarcas] = useState(false);
+
+  // ── NHTSA: modelos ─────────────────────────────────────────────────────────
+  const [modeloOptions, setModeloOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [loadingModelos, setLoadingModelos] = useState(false);
+
+  /** Ref para saber si el cambio de marca fue por el usuario (no carga inicial) */
+  const prevMarcaRef = useRef<string>("");
+
   const [formData, setFormData] = useState({
     marca: "",
     modelo: "",
@@ -48,7 +70,57 @@ export const VehiculosForm = ({
     status: true,
   });
 
-  // Cargar lista de clientes para el selector
+  // ── Cargar todas las marcas al montar ──────────────────────────────────────
+  useEffect(() => {
+    const fetchMarcas = async () => {
+      setLoadingMarcas(true);
+      try {
+        const makes = await obtenerTodasLasMarcas();
+        const opts = makes
+          .map((m) => ({ value: m.Make_Name, label: m.Make_Name }))
+          .sort((a, b) => a.label.localeCompare(b.label));
+        setMarcaOptions(opts);
+      } catch {
+        // silencioso; el usuario puede tipear la marca manualmente si NHTSA falla
+      } finally {
+        setLoadingMarcas(false);
+      }
+    };
+    fetchMarcas();
+  }, []);
+
+  // ── Cargar modelos cada vez que cambie la marca ────────────────────────────
+  useEffect(() => {
+    if (!formData.marca) {
+      setModeloOptions([]);
+      prevMarcaRef.current = "";
+      return;
+    }
+
+    // Si la marca la cambió el usuario (no la carga inicial al editar), limpiar modelo
+    if (prevMarcaRef.current && prevMarcaRef.current !== formData.marca) {
+      setFormData((prev) => ({ ...prev, modelo: "" }));
+    }
+    prevMarcaRef.current = formData.marca;
+
+    const fetchModelos = async () => {
+      setLoadingModelos(true);
+      try {
+        const models = await obtenerModelosPorMarca(formData.marca);
+        const opts = models
+          .map((m) => ({ value: m.Model_Name, label: m.Model_Name }))
+          .sort((a, b) => a.label.localeCompare(b.label));
+        setModeloOptions(opts);
+      } catch {
+        setModeloOptions([]);
+      } finally {
+        setLoadingModelos(false);
+      }
+    };
+    fetchModelos();
+  }, [formData.marca]);
+
+  // ── Cargar lista de clientes para el selector ─────────────────────────────
   useEffect(() => {
     const fetchClientes = async () => {
       setLoadingClientes(true);
@@ -208,30 +280,55 @@ export const VehiculosForm = ({
                 <span className="flex items-center gap-1">
                   <Tag className="w-3.5 h-3.5" />
                   Marca <span className="text-red-500">*</span>
+                  {loadingMarcas && (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-primary ml-1" />
+                  )}
                 </span>
               </label>
-              <Input
-                type="text"
+              <SearchableSelect
+                options={marcaOptions}
                 value={formData.marca}
-                onChange={(e) => set("marca", e.target.value)}
-                placeholder="Ej: Toyota, Honda, Ford..."
+                onChange={(val) => set("marca", val)}
+                placeholder={
+                  loadingMarcas
+                    ? "Cargando marcas..."
+                    : "Buscar marca (Toyota, Ford...)"
+                }
+                disabled={loading || loadingMarcas}
                 required
-                disabled={loading}
+                creatable
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                Modelo <span className="text-red-500">*</span>
+                <span className="flex items-center gap-1">
+                  Modelo <span className="text-red-500">*</span>
+                  {loadingModelos && (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-primary ml-1" />
+                  )}
+                </span>
               </label>
-              <Input
-                type="text"
+              <SearchableSelect
+                options={modeloOptions}
                 value={formData.modelo}
-                onChange={(e) => set("modelo", e.target.value)}
-                placeholder="Ej: Corolla, Civic, Focus..."
+                onChange={(val) => set("modelo", val)}
+                placeholder={
+                  !formData.marca
+                    ? "Selecciona primero la marca"
+                    : loadingModelos
+                      ? "Cargando modelos..."
+                      : "Buscar modelo..."
+                }
+                disabled={loading || !formData.marca || loadingModelos}
                 required
-                disabled={loading}
+                creatable
               />
+              {!formData.marca && (
+                <p className="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
+                  Selecciona una marca para ver sus modelos
+                </p>
+              )}
             </div>
 
             <div>
@@ -257,11 +354,11 @@ export const VehiculosForm = ({
                   Color
                 </span>
               </label>
-              <Input
-                type="text"
+              <ColorSelect
+                options={COLORES_VEHICULO}
                 value={formData.color}
-                onChange={(e) => set("color", e.target.value)}
-                placeholder="Ej: Blanco, Negro, Rojo..."
+                onChange={(val) => set("color", val)}
+                placeholder="Seleccionar color..."
                 disabled={loading}
               />
             </div>

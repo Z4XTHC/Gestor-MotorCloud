@@ -78,8 +78,12 @@ export function Login() {
         <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
           {/* Header naranja */}
           <div className="bg-gradient-to-br from-primary-500 to-primary-700 p-8 text-center">
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Wrench className="w-8 h-8 text-white" />
+            <div className="w-18 h-18 flex items-center justify-center mx-auto mb-4">
+              <img
+                src="/favicon.png"
+                alt=""
+                className="w-full h-full object-cover"
+              />
             </div>
             <h1 className="text-2xl font-bold text-white">Motor Cloud</h1>
             <p className="text-primary-100 text-sm mt-1">Gestión de Taller</p>

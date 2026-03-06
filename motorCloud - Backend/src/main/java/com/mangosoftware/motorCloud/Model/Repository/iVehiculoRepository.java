@@ -13,4 +13,7 @@ public interface iVehiculoRepository extends JpaRepository<Vehiculo, Long> {
     // Obtener Vehiculo por Estado
     List<Vehiculo> findByStatus(Boolean status);
 
+    // Obtener Vehiculos por ID de Cliente
+    List<Vehiculo> findByClienteId(Long clienteId);
+
 }

@@ -42,7 +42,7 @@ public class Vehiculo {
 
     private String modelo;
 
-    private int anio;
+    private Integer anio;
 
     private String color;
 

@@ -20,4 +20,6 @@ public interface iVehiculoService {
 
     public List<Vehiculo> getVehiculosByStatus(Boolean status);
 
+    public List<Vehiculo> getVehiculosByClienteId(Long clienteId);
+
 }

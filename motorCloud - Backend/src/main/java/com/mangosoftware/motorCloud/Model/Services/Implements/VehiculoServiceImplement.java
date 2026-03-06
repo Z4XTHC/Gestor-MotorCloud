@@ -63,6 +63,10 @@ public class VehiculoServiceImplement implements iVehiculoService {
     public List<Vehiculo> getVehiculosByStatus(Boolean status) {
         return vehiculoRepository.findByStatus(status);
     }
-    
+
+    @Override
+    public List<Vehiculo> getVehiculosByClienteId(Long clienteId) {
+        return vehiculoRepository.findByClienteId(clienteId);
+    }
 
 }

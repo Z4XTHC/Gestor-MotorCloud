@@ -95,3 +95,12 @@ export async function actualizarEstadoVehiculo({
   );
   return data;
 }
+
+export async function obtenerVehiculosPorCliente(
+  clienteId: string,
+): Promise<Vehiculo[]> {
+  const { data } = await axiosInstance.get(
+    API_ENDPOINTS.VEHICULOS.BY_CLIENT(clienteId),
+  );
+  return Array.isArray(data) ? data : data || [];
+}

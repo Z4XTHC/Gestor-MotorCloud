@@ -9,6 +9,11 @@ interface SearchableSelectProps {
   className?: string;
   required?: boolean;
   disabled?: boolean;
+  /**
+   * Si es true, cuando la búsqueda no coincide exactamente con ninguna opción
+   * aparece un ítem "+ Usar \"[texto]\"" que permite guardar el valor libre.
+   */
+  creatable?: boolean;
 }
 
 export const SearchableSelect = ({
@@ -19,18 +24,28 @@ export const SearchableSelect = ({
   className = "",
   required = false,
   disabled = false,
+  creatable = false,
 }: SearchableSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
   const filteredOptions = useMemo(() => {
     if (!search) return options;
     const searchLower = search.toLowerCase();
     return options.filter((opt) =>
-      opt.label.toLowerCase().includes(searchLower)
+      opt.label.toLowerCase().includes(searchLower),
     );
   }, [options, search]);
+
+  /** Verdadero cuando el texto buscado no coincide exactamente con ninguna opción. */
+  const canCreate =
+    creatable &&
+    search.trim().length > 0 &&
+    !options.some(
+      (opt) => opt.label.toLowerCase() === search.trim().toLowerCase(),
+    );
 
   const selectedOption = options.find((opt) => opt.value === value);
 
@@ -65,7 +80,19 @@ export const SearchableSelect = ({
     <div ref={containerRef} className={`relative ${className}`}>
       <button
         type="button"
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={() => {
+          if (disabled) return;
+          if (!isOpen && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom;
+            setDropdownPos({
+              top: spaceBelow < 268 ? rect.top - 264 : rect.bottom + 4,
+              left: rect.left,
+              width: rect.width,
+            });
+          }
+          setIsOpen(!isOpen);
+        }}
         disabled={disabled}
         className={`w-full px-4 py-2 border border-neutral-light dark:border-dark-bg rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-dark-bg text-gray-900 dark:text-dark-text text-left flex items-center justify-between ${
           disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
@@ -92,7 +119,16 @@ export const SearchableSelect = ({
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-dark-card border border-neutral-light dark:border-dark-bg rounded-lg shadow-lg max-h-64 overflow-hidden">
+        <div
+          style={{
+            position: "fixed",
+            top: dropdownPos.top,
+            left: dropdownPos.left,
+            width: dropdownPos.width,
+            zIndex: 9999,
+          }}
+          className="bg-white dark:bg-dark-card border border-neutral-light dark:border-dark-bg rounded-lg shadow-lg max-h-64 overflow-hidden"
+        >
           <div className="p-2 border-b border-neutral-light dark:border-dark-bg">
             <input
               type="text"
@@ -105,29 +141,52 @@ export const SearchableSelect = ({
             />
           </div>
           <div className="overflow-y-auto max-h-48">
-            {filteredOptions.length === 0 ? (
+            {filteredOptions.length === 0 && !canCreate ? (
               <div className="px-4 py-3 text-gray-500 dark:text-gray-400 text-center">
                 No se encontraron resultados
               </div>
             ) : (
-              filteredOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => {
-                    onChange(option.value);
-                    setIsOpen(false);
-                    setSearch("");
-                  }}
-                  className={`w-full px-4 py-2 text-left hover:bg-primary-lighter dark:hover:bg-dark-bg transition-colors text-gray-900 dark:text-dark-text ${
-                    value === option.value
-                      ? "bg-primary-lighter dark:bg-dark-bg font-medium"
-                      : ""
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))
+              <>
+                {filteredOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => {
+                      onChange(option.value);
+                      setIsOpen(false);
+                      setSearch("");
+                    }}
+                    className={`w-full px-4 py-2 text-left hover:bg-primary-lighter dark:hover:bg-dark-bg transition-colors text-gray-900 dark:text-dark-text ${
+                      value === option.value
+                        ? "bg-primary-lighter dark:bg-dark-bg font-medium"
+                        : ""
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+
+                {canCreate && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const custom = search.trim();
+                      onChange(custom);
+                      setIsOpen(false);
+                      setSearch("");
+                    }}
+                    className="w-full px-4 py-2 text-left flex items-center gap-2 text-primary dark:text-dark-primary hover:bg-primary-lighter dark:hover:bg-dark-bg transition-colors border-t border-neutral-light dark:border-dark-bg font-medium"
+                  >
+                    <span className="text-lg leading-none">+</span>
+                    <span>
+                      Usar{" "}
+                      <span className="font-semibold">
+                        &ldquo;{search.trim()}&rdquo;
+                      </span>
+                    </span>
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
