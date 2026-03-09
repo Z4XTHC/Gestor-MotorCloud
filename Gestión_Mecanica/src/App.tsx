@@ -12,6 +12,7 @@ import { Login } from "./pages/Auth/Login";
 import { AcercaDe } from "./pages/AcercaDe";
 import { Calendario } from "./pages/Calendario/Calendario";
 import { Config } from "./pages/Config/Config";
+import { Proveedores } from "./pages/Proveedores/Proveedores";
 
 function AppContent() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -68,6 +69,8 @@ function AppContent() {
         return <Clients />;
       case "vehiculos":
         return <VehiculosList />;
+      case "proveedores":
+        return <Proveedores />;
       case "reports":
         return (
           <main className="p-4 lg:p-6" role="main">

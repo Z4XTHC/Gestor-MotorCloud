@@ -35,7 +35,7 @@ public class ProveedorController {
         return ResponseEntity.ok(proveedores);
     }
 
-    @PostMapping
+    @PostMapping("/guardar")
     public ResponseEntity<Proveedor> createProveedor(@Valid @RequestBody Proveedor proveedor, BindingResult result) {
         if (result.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
@@ -54,7 +54,7 @@ public class ProveedorController {
         return ResponseEntity.ok(nuevoProveedor);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/actualizar/{id}")
     public ResponseEntity<Proveedor> updateProveedor(@PathVariable Long id, @Valid @RequestBody Proveedor proveedor,
             BindingResult result) {
         if (result.hasErrors()) {
@@ -70,7 +70,7 @@ public class ProveedorController {
         return ResponseEntity.ok(proveedorActualizado);
     }
 
-    @PutMapping("/{id}/status")
+    @PutMapping("/cambiar-estado/{id}")
     public ResponseEntity<Proveedor> changeStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> status) {
         if (!status.containsKey("status")) {
             return ResponseEntity.badRequest().body(null);

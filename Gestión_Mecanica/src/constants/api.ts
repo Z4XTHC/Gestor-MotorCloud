@@ -64,6 +64,26 @@ export const API_ENDPOINTS = {
     BY_CLIENT: (clienteId: string) => `/api/vehiculos/porCliente/${clienteId}`,
   },
 
+  // 🛠️ Inventario
+  INVENTARIO: {
+    LIST: "/api/inventario",
+    CREATE: "/api/inventario/guardar",
+    GET: (id: string) => `/api/inventario/detalles/${id}`,
+    UPDATE: (id: string) => `/api/inventario/actualizar/${id}`,
+    TOGGLE_STATUS: (id: string) => `/api/inventario/cambiar-estado/${id}`,
+    DELETE: (id: string) => `/api/inventario/${id}`,
+  },
+
+  // 🏭 Proveedores
+  PROVEEDORES: {
+    LIST: "/api/proveedores",
+    CREATE: "/api/proveedores/guardar",
+    GET: (id: string) => `/api/proveedores/detalles/${id}`,
+    UPDATE: (id: string) => `/api/proveedores/actualizar/${id}`,
+    TOGGLE_STATUS: (id: string) => `/api/proveedores/cambiar-estado/${id}`,
+    DELETE: (id: string) => `/api/proveedores/${id}`,
+  },
+
   // 👑 Admin
   ADMIN: {
     LIST_ALL_CLIENTS: "/api/admin",
