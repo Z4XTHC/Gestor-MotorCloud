@@ -36,7 +36,7 @@ public class InventarioServiceImplement implements iInventarioService {
         if (existingInventario != null) {
             existingInventario.setNombre(inventario.getNombre());
             existingInventario.setDescripcion(inventario.getDescripcion());
-            existingInventario.setCantidad(inventario.getCantidad());
+            existingInventario.setStock(inventario.getStock());
             existingInventario.setPrecio(inventario.getPrecio());
             return inventarioRepository.save(existingInventario);
         }
