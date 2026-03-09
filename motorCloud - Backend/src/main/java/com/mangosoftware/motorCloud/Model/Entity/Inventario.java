@@ -22,6 +22,8 @@ public class Inventario {
 
     private String nombre;
 
+    private String codigo;
+
     private String descripcion;
 
     private Integer stock;

@@ -68,4 +68,9 @@ public class InventarioServiceImplement implements iInventarioService {
         return inventarioRepository.existsByNombre(nombre);
     }
 
+    @Override
+    public boolean existsByCodigo(String codigo) {
+        return inventarioRepository.existsByCodigo(codigo);
+    }
+
 }

@@ -1,428 +1,419 @@
-﻿// =============================================================
-// PLANTILLA: Lista con tabla paginada, filtros y ordenamiento
-// =============================================================
-// PASOS PARA ADAPTAR:
-//  1. Reemplazar "Entidad" / "entidades" por el nombre real (ej: Cliente, Producto)
-//  2. Reemplazar "EntidadType" por el tipo TypeScript de tu entidad
-//  3. Ajustar los imports de API (obtenerXxx, actualizarEstadoXxx)
-//  4. Definir los campos de SortField segun los campos de tu entidad
-//  5. Actualizar "columnas" con las columnas reales de la tabla
-//  6. Actualizar el bloque de filtros segun los campos filtrables
-//  7. Actualizar filteredAndSortedData con la logica de filtro correcta
-//  8. Actualizar renderRow con las celdas correspondientes a tus campos
-//  9. Ajustar el toggle de estado si tu entidad no lo necesita (puedes eliminarlo)
-// 10. Importar los componentes de detalle/form/confirm propios de la entidad
-// =============================================================
-
-import { useState, useEffect, useMemo } from "react";
+﻿import { useState, useEffect } from "react";
 import {
+  Search,
+  Building2,
   Plus,
+  Mail,
+  Phone,
+  MapPin,
+  CreditCard,
   Edit,
-  Trash2,
-  Eye,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  ToggleLeft,  // [OPCIONAL] Solo si la entidad tiene toggle de estado
-  ToggleRight, // [OPCIONAL] Solo si la entidad tiene toggle de estado
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
-import Swal from "sweetalert2";
-import { Column, Table } from "../common/Table";
-import { TableSkeleton } from "../common/TableSkeleton";
-import { Button } from "../common/Button";
-import { SearchInput } from "../common/SearchInput";
-import { SearchableSelect } from "../common/SearchableSelect";
-import { Modal } from "../common/Modal";
-import { showError } from "../common/SweetAlert";
+import { Button } from "../../components/common/Button";
+import { Modal } from "../../components/common/Modal";
+import { TableSkeleton } from "../../components/common/TableSkeleton";
+import {
+  showSuccess,
+  showError,
+  showConfirm,
+} from "../../components/common/SweetAlert";
+import { Proveedor } from "../../types/proveedor";
+import {
+  obtenerProveedores,
+  actualizarEstadoProveedor,
+} from "../../api/proveedorApi";
+import { ProveedoresForm } from "./ProveedoresForm";
+import { confirmarEliminarProveedor } from "./ProveedoresConfirm";
 
-// [TODO] Reemplazar por el tipo real de tu entidad
-// import { EntidadType } from "../../types/entidad";
-
-// [TODO] Reemplazar por las funciones de API correspondientes
-// import { obtenerEntidades, actualizarEstadoEntidad } from "../../api/entidadApi";
-
-// [TODO] Importar los componentes propios de la entidad
-// import { EntidadDetalles } from "./EntidadDetalles";
-// import { EntidadForm } from "./EntidadForm";
-// import { confirmarEliminarEntidad } from "./EntidadConfirm";
-
-// [TODO] Definir los campos por los que se puede ordenar
-type SortField = "campo1" | "campo2" | "campo3";
-type SortDirection = "asc" | "desc" | null;
-
-// [TODO] Renombrar el componente: EntidadList
-export const ProveedoresList = () => {
-  const [proveedores, setProveedores] = useState<any[]>([]);
+export const Proveedores = () => {
+  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedProveedor, setSelectedProveedor] =
+    useState<Proveedor | null>(null);
 
-  // [OPCIONAL] Filtros adicionales segun campos de la entidad
-  const [filtro1, setFiltro1] = useState("");
-  const [estadoFilter, setEstadoFilter] = useState("");
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingProveedor, setEditingProveedor] = useState<Proveedor | null>(
+    null,
+  );
 
-  const [selectedProveedor, setSelectedProveedor] = useState<any | null>(null);
-  const [editingEntidad, setEditingEntidad] = useState<any | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [sortField, setSortField] = useState<SortField | null>("campo1");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-
-  // [TODO] Renombrar a fetchEntidades
   const fetchProveedores = async () => {
     setLoading(true);
     try {
-      // [TODO] Llamar a la API real: const data = await obtenerEntidades();
-      const data: any[] = [];
+      const data = await obtenerProveedores();
       setProveedores(data);
-    } catch (_) {
+    } catch {
+      showError("Error", "No se pudo cargar la lista de proveedores.");
       setProveedores([]);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "No se pudieron cargar los registros", // [TODO] Personalizar
-        confirmButtonColor: "#F39F23",
-      });
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchProveedores(); }, []);
+  useEffect(() => {
+    fetchProveedores();
+  }, []);
 
-  // Resetea la pagina al cambiar filtros
-  useEffect(() => { setCurrentPage(1); }, [search, filtro1, estadoFilter, itemsPerPage]);
+  const filteredProveedores = proveedores.filter(
+    (p) =>
+      (p.razonSocial || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.cuit || "").includes(searchTerm) ||
+      (p.telefono || "").includes(searchTerm) ||
+      (p.email || "").toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
-  // [TODO] Definir columnas de la tabla segun campos reales
-  const columnas: Column[] = [
-    { key: "campo1", label: "Campo 1", sortable: true },
-    { key: "campo2", label: "Campo 2", sortable: true },
-    { key: "campo3", label: "Campo 3", align: "center", sortable: true },
-    { key: "status", label: "Estado", align: "center", sortable: true }, // [OPCIONAL]
-    { key: "acciones", label: "Acciones", align: "right" },
-  ];
-
-  const filteredAndSortedData = useMemo(() => {
-    let filtered = proveedores.filter((item) => {
-      if (search) {
-        const s = search.toLowerCase();
-        const ok =
-          item.campo1?.toLowerCase().includes(s) ||
-          item.campo2?.toLowerCase().includes(s);
-        if (!ok) return false;
-      }
-      if (filtro1 && item.campo3 !== filtro1) return false;
-      if (estadoFilter !== "") {
-        if (estadoFilter === "activo" && !item.status) return false;
-        if (estadoFilter === "inactivo" && item.status) return false;
-      }
-      return true;
-    });
-
-    if (sortField && sortDirection) {
-      filtered = [...filtered].sort((a, b) => {
-        let aVal: string | number = "";
-        let bVal: string | number = "";
-        switch (sortField) {
-          case "campo1": aVal = a.campo1?.toLowerCase() ?? ""; bVal = b.campo1?.toLowerCase() ?? ""; break;
-          case "campo2": aVal = a.campo2?.toLowerCase() ?? ""; bVal = b.campo2?.toLowerCase() ?? ""; break;
-          case "campo3": aVal = a.campo3?.toLowerCase() ?? ""; bVal = b.campo3?.toLowerCase() ?? ""; break;
-      }
-      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
-        if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-    return filtered;
-  }, [proveedores, search, filtro1, estadoFilter, sortField, sortDirection]);
-
-  const totalItems = filteredAndSortedData.length;
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredAndSortedData.slice(startIndex, startIndex + itemsPerPage);
-
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      if (sortDirection === "asc") setSortDirection("desc");
-      else if (sortDirection === "desc") { setSortDirection(null); setSortField(null); }
-      else setSortDirection("asc");
-    } else {
-      setSortField(field as SortField);
-      setSortDirection("asc");
+  const handleProveedorCreado = async (nuevo?: Proveedor) => {
+    await fetchProveedores();
+    if (nuevo) {
+      setSelectedProveedor(nuevo);
+      showSuccess(
+        "Proveedor creado",
+        `${nuevo.razonSocial} fue registrado correctamente.`,
+        2000,
+      );
     }
   };
 
-  const getSortIcon = (field: string) => {
-    if (sortField !== field) return <ArrowUpDown className="w-4 h-4 ml-1" />;
-    if (sortDirection === "asc") return <ArrowUp className="w-4 h-4 ml-1" />;
-    if (sortDirection === "desc") return <ArrowDown className="w-4 h-4 ml-1" />;
-    return <ArrowUpDown className="w-4 h-4 ml-1" />;
+  const handleProveedorEditado = async (actualizado?: Proveedor) => {
+    await fetchProveedores();
+    if (actualizado) {
+      setSelectedProveedor(actualizado);
+      showSuccess("Actualizado", "Los datos del proveedor fueron actualizados.", 2000);
+    }
   };
 
-  // [OPCIONAL] Eliminar si no hay accion de borrado
-  const handleDelete = async (id: number) => {
-    // [TODO] await confirmarEliminarEntidad(String(id), fetchEntidades);
-    console.log("Eliminar", id);
-  };
-
-  // [OPCIONAL] Eliminar si la entidad no tiene toggle de estado
-  const handleToggleStatus = async (item: any) => {
-    const nuevoEstado = !item.status;
+  const handleToggleStatus = async (proveedor: Proveedor) => {
+    const nuevoEstado = !proveedor.status;
     const accion = nuevoEstado ? "activar" : "desactivar";
-    const result = await Swal.fire({
-      title: `Estado: ${nuevoEstado ? "Activar" : "Desactivar"}?`,
-      text: `Desea ${accion} el registro?`,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#F39F23",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: `Si, ${accion}`,
-      cancelButtonText: "Cancelar",
-    });
-    if (!result.isConfirmed) return;
+    const res = await showConfirm(
+      `¿${nuevoEstado ? "Activar" : "Desactivar"} proveedor?`,
+      `¿Deseas ${accion} a "${proveedor.razonSocial}"?`,
+      `Sí, ${accion}`,
+      "Cancelar",
+    );
+    if (!res.isConfirmed) return;
     try {
-      // [TODO] await actualizarEstadoEntidad({ id: String(item.id), active: nuevoEstado });
-      Swal.fire({ icon: "success", title: nuevoEstado ? "Activado" : "Desactivado", timer: 1800, showConfirmButton: false });
-      fetchProveedores();
-    } catch (_) {
-      showError("Error", `No se pudo ${accion} el registro.`);
+      await actualizarEstadoProveedor({
+        id: String(proveedor.id),
+        status: nuevoEstado,
+      });
+      showSuccess(
+        nuevoEstado ? "Activado" : "Desactivado",
+        "Estado del proveedor actualizado.",
+        1800,
+      );
+      await fetchProveedores();
+      if (selectedProveedor?.id === proveedor.id) {
+        setSelectedProveedor((prev) =>
+          prev ? { ...prev, status: nuevoEstado } : null,
+        );
+      }
+    } catch {
+      showError("Error", `No se pudo ${accion} el proveedor.`);
     }
   };
-
-  const handleEditFromDetails = (item: any) => {
-    setSelectedProveedor(null);
-    setEditingProveedor(item);
-  };
-
-  // [OPCIONAL] Opciones de filtros
-  // const filtro1Options = [
-  //   { value: "", label: "Todos" },
-  //   { value: "VALOR_A", label: "Opcion A" },
-  //   { value: "VALOR_B", label: "Opcion B" },
-  // ];
-  const estadoOptions = [
-    { value: "", label: "Todos los estados" },
-    { value: "activo", label: "Activo" },
-    { value: "inactivo", label: "Inactivo" },
-  ];
-  const itemsPerPageOptions = [
-    { value: "5", label: "5" },
-    { value: "10", label: "10" },
-    { value: "15", label: "15" },
-    { value: "20", label: "20" },
-  ];
 
   return (
     <main className="p-4 lg:p-6" role="main">
-
       {/* === ENCABEZADO === */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
-          {/* [TODO] Cambiar titulo y subtitulo */}
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-            Entidades
+            Gestión de Proveedores
           </h1>
           <p className="text-neutral-600 dark:text-neutral-400">
-            Gestion de entidades del sistema
+            {loading
+              ? "Cargando..."
+              : `${proveedores.length} proveedor${proveedores.length !== 1 ? "es" : ""} registrado${proveedores.length !== 1 ? "s" : ""}`}
           </p>
         </div>
         <Button
           icon={<Plus className="w-4 h-4" />}
-          onClick={() => setShowCreateModal(true)}
+          onClick={() => setShowCreateForm(true)}
+          className="bg-primary-500 border-primary-500 text-white hover:bg-primary-600 dark:border-primary-400 dark:text-white dark:hover:bg-primary-700 transition-colors"
         >
-          Nueva Entidad {/* [TODO] Cambiar texto */}
+          Nuevo Proveedor
         </Button>
       </div>
 
-      {/* === FILTROS === */}
-      <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 mb-4">
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Buscar..." // [TODO] Personalizar
-          className="flex-1"
-        />
-        <div className="flex gap-3">
-          {/* [OPCIONAL] Filtro por campo especifico */}
-          {/* <SearchableSelect
-            value={filtro1}
-            onChange={setFiltro1}
-            options={filtro1Options}
-            placeholder="Filtrar por campo..."
-            className="w-44"
-          /> */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+        {/* ===== PANEL IZQUIERDO: Lista de proveedores ===== */}
+        <div className="lg:col-span-1">
+          <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
+            <div className="p-4 border-b border-neutral-200 dark:border-neutral-700">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre, CUIT, email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white placeholder-neutral-500 dark:placeholder-neutral-400 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+            </div>
 
-          {/* [OPCIONAL] Filtro por estado */}
-          <SearchableSelect
-            value={estadoFilter}
-            onChange={setEstadoFilter}
-            options={estadoOptions}
-            placeholder="Todos los estados"
-            className="w-44"
-          />
+            {loading ? (
+              <div className="p-4">
+                <TableSkeleton columns={1} rows={5} />
+              </div>
+            ) : (
+              <div className="max-h-[560px] overflow-y-auto">
+                {filteredProveedores.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <Building2 className="w-10 h-10 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                      {searchTerm
+                        ? `Sin resultados para "${searchTerm}"`
+                        : "No hay proveedores registrados"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-2 space-y-1">
+                    {filteredProveedores.map((proveedor) => (
+                      <button
+                        key={proveedor.id}
+                        onClick={() => setSelectedProveedor(proveedor)}
+                        className={`w-full p-3 text-left rounded-lg transition-colors ${
+                          selectedProveedor?.id === proveedor.id
+                            ? "bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800"
+                            : "hover:bg-neutral-50 dark:hover:bg-neutral-700/50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
+                              proveedor.status
+                                ? "bg-primary-100 dark:bg-primary-900/20"
+                                : "bg-neutral-100 dark:bg-neutral-700"
+                            }`}
+                          >
+                            <Building2
+                              className={`w-4 h-4 ${
+                                proveedor.status
+                                  ? "text-primary-600 dark:text-primary-400"
+                                  : "text-neutral-400 dark:text-neutral-500"
+                              }`}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm text-neutral-900 dark:text-white truncate">
+                                {proveedor.razonSocial}
+                              </span>
+                              {!proveedor.status && (
+                                <span className="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400 shrink-0">
+                                  Inactivo
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                              {proveedor.cuit} • {proveedor.telefono || "Sin teléfono"}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
 
-          {/* Items por pagina */}
-          <SearchableSelect
-            value={String(itemsPerPage)}
-            onChange={(v) => setItemsPerPage(Number(v))}
-            options={itemsPerPageOptions}
-            placeholder="10"
-            className="w-20"
-          />
+        {/* ===== PANEL DERECHO: Detalle del proveedor ===== */}
+        <div className="lg:col-span-2">
+          {selectedProveedor ? (
+            <div className="space-y-4 lg:space-y-5">
+              {/* Cabecera del proveedor */}
+              <div className="bg-white dark:bg-neutral-800 rounded-xl p-6 border border-neutral-200 dark:border-neutral-700 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 bg-primary-100 dark:bg-primary-900/20 rounded-full flex items-center justify-center shrink-0">
+                      <Building2 className="w-7 h-7 text-primary-600 dark:text-primary-400" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-1">
+                        <h2 className="text-xl font-bold text-neutral-900 dark:text-white">
+                          {selectedProveedor.razonSocial}
+                        </h2>
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                            selectedProveedor.status
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+                              : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+                          }`}
+                        >
+                          {selectedProveedor.status ? (
+                            <ToggleRight className="w-3 h-3" />
+                          ) : (
+                            <ToggleLeft className="w-3 h-3" />
+                          )}
+                          {selectedProveedor.status ? "Activo" : "Inactivo"}
+                        </span>
+                      </div>
+                      <div className="space-y-1 text-sm text-neutral-500 dark:text-neutral-400">
+                        <p className="flex items-center gap-2">
+                          <CreditCard className="w-3.5 h-3.5" />
+                          CUIT: {selectedProveedor.cuit || "-"}
+                        </p>
+                        {selectedProveedor.email && (
+                          <p className="flex items-center gap-2">
+                            <Mail className="w-3.5 h-3.5" />
+                            {selectedProveedor.email}
+                          </p>
+                        )}
+                        {selectedProveedor.telefono && (
+                          <p className="flex items-center gap-2">
+                            <Phone className="w-3.5 h-3.5" />
+                            {selectedProveedor.telefono}
+                          </p>
+                        )}
+                        {selectedProveedor.direccion && (
+                          <p className="flex items-center gap-2">
+                            <MapPin className="w-3.5 h-3.5" />
+                            {selectedProveedor.direccion}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <Button
+                      icon={<Edit className="w-4 h-4" />}
+                      variant="outline"
+                      onClick={() => setEditingProveedor(selectedProveedor)}
+                    >
+                      Editar
+                    </Button>
+                    <button
+                      onClick={() => handleToggleStatus(selectedProveedor)}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                        selectedProveedor.status
+                          ? "border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                          : "border-green-200 text-green-600 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20"
+                      }`}
+                    >
+                      {selectedProveedor.status ? (
+                        <>
+                          <ToggleLeft className="w-3.5 h-3.5" /> Desactivar
+                        </>
+                      ) : (
+                        <>
+                          <ToggleRight className="w-3.5 h-3.5" /> Activar
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() =>
+                        confirmarEliminarProveedor(
+                          String(selectedProveedor.id),
+                          selectedProveedor.razonSocial,
+                          () => {
+                            setSelectedProveedor(null);
+                            fetchProveedores();
+                          },
+                        )
+                      }
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Información adicional */}
+              <div className="bg-white dark:bg-neutral-800 rounded-xl p-5 border border-neutral-200 dark:border-neutral-700 shadow-sm">
+                <h3 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2 mb-4">
+                  <CreditCard className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                  Datos del Proveedor
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-1">ID</p>
+                    <p className="text-sm text-neutral-900 dark:text-white">#{selectedProveedor.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-1">CUIT</p>
+                    <p className="text-sm font-mono text-neutral-900 dark:text-white">{selectedProveedor.cuit || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-1">Teléfono</p>
+                    <p className="text-sm text-neutral-900 dark:text-white">{selectedProveedor.telefono || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-1">Email</p>
+                    <p className="text-sm text-neutral-900 dark:text-white">{selectedProveedor.email || "-"}</p>
+                  </div>
+                  {selectedProveedor.direccion && (
+                    <div className="md:col-span-2">
+                      <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-1">Dirección</p>
+                      <p className="text-sm text-neutral-900 dark:text-white">{selectedProveedor.direccion}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm">
+              <div className="p-12 text-center">
+                <Building2 className="w-14 h-14 text-neutral-300 dark:text-neutral-600 mx-auto mb-4" />
+                <h3 className="text-base font-semibold text-neutral-900 dark:text-white mb-2">
+                  Selecciona un proveedor
+                </h3>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  Elige un proveedor de la lista para ver su información de contacto
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Contador de resultados */}
-      <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
-        {totalItems} {totalItems === 1 ? "registro" : "registros"} encontrados
-        {/* [TODO] Cambiar "registro" al plural de la entidad */}
-      </p>
-
-      {/* === TABLA === */}
-      {loading ? (
-        <TableSkeleton columns={columnas.length} rows={itemsPerPage} />
-      ) : (
-        <Table
-          columns={columnas}
-          data={paginatedData}
-          loading={false}
-          search={search}
-          isFiltering={!!search || !!filtro1 || !!estadoFilter}
-          emptyMessage={(s) =>
-            s
-              ? `No se encontraron resultados para "${s}"`
-              : "No hay registros" // [TODO] Personalizar
-          }
-          onSort={handleSort}
-          getSortIcon={getSortIcon}
-          pagination={{
-            currentPage,
-            setCurrentPage,
-            itemsPerPage,
-            totalItems,
-            label: "entidades", // [TODO] Cambiar al plural correcto
+      {/* ===== MODAL: Crear Proveedor ===== */}
+      <Modal
+        isOpen={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        title="Nuevo Proveedor"
+        icon={
+          <Building2 className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+        }
+        maxWidth="lg"
+        noPadding
+      >
+        <ProveedoresForm
+          onClose={() => setShowCreateForm(false)}
+          onSuccess={(nuevo) => {
+            setShowCreateForm(false);
+            handleProveedorCreado(nuevo);
           }}
-          renderRow={(item) => (
-            <>
-              {/* [TODO] Una <td> por cada columna definida en "columnas" */}
-
-              {/* [OPCIONAL] Campo con icono (columna principal) */}
-              {/* <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center shrink-0">
-                    <IconX className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-neutral-900 dark:text-white">{item.campo1}</p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">ID: {item.id}</p>
-                  </div>
-                </div>
-              </td> */}
-
-              {/* Campo de texto simple */}
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className="text-sm font-medium text-neutral-900 dark:text-white">{item.campo1}</span>
-              </td>
-
-              {/* Campo secundario */}
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className="text-sm text-neutral-500 dark:text-neutral-400">{item.campo2 || "-"}</span>
-              </td>
-
-              {/* Badge de tipo / categoria */}
-              <td className="px-6 py-4 whitespace-nowrap text-center">
-                <span className={
-                  item.campo3 === "VALOR_A"
-                    ? "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400"
-                    : "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
-                }>
-                  {item.campo3 === "VALOR_A" ? "Tipo A" : "Tipo B"}
-                </span>
-              </td>
-
-              {/* [OPCIONAL] Estado activo/inactivo con toggle */}
-              <td className="px-6 py-4 whitespace-nowrap text-center">
-                <button
-                  onClick={() => handleToggleStatus(item)}
-                  className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
-                    item.status
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400 hover:bg-green-200"
-                      : "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400 hover:bg-red-200"
-                  }`}
-                  title={item.status ? "Desactivar" : "Activar"}
-                >
-                  {item.status ? (
-                    <ToggleRight className="w-3.5 h-3.5" />
-                  ) : (
-                    <ToggleLeft className="w-3.5 h-3.5" />
-                  )}
-                  {item.status ? "Activo" : "Inactivo"}
-                </button>
-              </td>
-
-              {/* === BOTONES DE ACCION === */}
-              <td className="px-6 py-4 whitespace-nowrap text-right">
-                <div className="flex items-center justify-end gap-1">
-                  <button
-                    onClick={() => setSelectedEntidad(item)}
-                    className="p-2 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
-                    title="Ver detalles"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setEditingEntidad(item)}
-                    className="p-2 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
-                    title="Editar"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    title="Eliminar"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </td>
-            </>
-          )}
         />
-      )}
+      </Modal>
 
-      {/* === MODALES === */}
-      {/* [TODO] Reemplazar los JSX comentados por los componentes reales */}
-
-      {/* Detalles */}
-      {/* <EntidadDetalles
-        entidad={selectedEntidad}
-        onClose={() => setSelectedEntidad(null)}
-        onEdit={handleEditFromDetails}
-      /> */}
-
-      {/* Editar */}
+      {/* ===== MODAL: Editar Proveedor ===== */}
       <Modal
-        isOpen={!!editingEntidad}
-        onClose={() => setEditingEntidad(null)}
-        title="Editar Entidad"
+        isOpen={!!editingProveedor}
+        onClose={() => setEditingProveedor(null)}
+        title="Editar Proveedor"
+        icon={
+          <Edit className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+        }
         maxWidth="lg"
         noPadding
       >
-        {/* [TODO] <EntidadForm entidad={editingEntidad} onClose={() => setEditingEntidad(null)} onSuccess={fetchEntidades} /> */}
+        <ProveedoresForm
+          proveedor={editingProveedor}
+          onClose={() => setEditingProveedor(null)}
+          onSuccess={(actualizado) => {
+            setEditingProveedor(null);
+            handleProveedorEditado(actualizado);
+          }}
+        />
       </Modal>
-
-      {/* Crear */}
-      <Modal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        title="Nueva Entidad"
-        maxWidth="lg"
-        noPadding
-      >
-        {/* [TODO] <EntidadForm onClose={() => setShowCreateModal(false)} onSuccess={fetchEntidades} /> */}
-      </Modal>
-
     </main>
   );
 };

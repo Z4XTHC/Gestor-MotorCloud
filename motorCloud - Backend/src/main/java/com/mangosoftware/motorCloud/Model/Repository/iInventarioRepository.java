@@ -13,4 +13,7 @@ public interface iInventarioRepository extends JpaRepository<Inventario, Long> {
 
     // Verificar si el inventario existe por Nombre
     boolean existsByNombre(String nombre);
+
+    // Verificar si el inventario existe por Código
+    boolean existsByCodigo(String codigo);
 }

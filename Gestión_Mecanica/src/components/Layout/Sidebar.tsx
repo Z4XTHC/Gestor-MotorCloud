@@ -36,6 +36,7 @@ const menuCategories = [
       { id: "orders", label: "Órdenes de Trabajo", icon: ClipboardList },
       { id: "clients", label: "Clientes", icon: Users },
       { id: "vehiculos", label: "Vehículos", icon: Car },
+      { id: "proveedores", label: "Proveedores", icon: Users },
     ],
   },
   {

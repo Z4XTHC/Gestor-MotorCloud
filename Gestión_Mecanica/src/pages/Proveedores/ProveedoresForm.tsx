@@ -1,234 +1,146 @@
-// =============================================================
-// PLANTILLA: Formulario de creación y edición (dentro de Modal)
-// =============================================================
-// PASOS PARA ADAPTAR:
-//  1. Reemplazar "Entidad" / "entidad" por el nombre real
-//  2. Reemplazar "EntidadType" por el tipo TypeScript real
-//  3. Cambiar el icono del modal (prop `icon` en el padre)
-//  4. Cambiar los imports de API (crearXxx, actualizarXxx)
-//  5. Definir formData con los campos del formulario
-//  6. Ajustar el useEffect de precarga (modo edición)
-//  7. Construir el payload del handleSubmit con los campos reales
-//  8. Agregar / quitar campos del formulario según la entidad
-//  9. Para usar este form dentro de Modal:
-//        <Modal isOpen={...} onClose={...} title="Nueva Entidad"
-//               icon={<IconX className="w-5 h-5 text-primary-600" />}
-//               maxWidth="lg" noPadding>
-//          <EntidadForm onClose={...} onSuccess={...} />
-//        </Modal>
-// =============================================================
-
 import { useState, useEffect } from "react";
-import { Edit, Plus, Eye, EyeOff } from "lucide-react"; // [OPCIONAL] Eye/EyeOff solo para password
-import { Button } from "../common/Button";
-import { Input } from "../common/Input";
-import { SearchableSelect } from "../common/SearchableSelect";
-import { showSuccess, showError } from "../common/SweetAlert";
+import { Building2, Hash, Phone, Mail, MapPin, Edit, Plus } from "lucide-react";
+import { Button } from "../../components/common/Button";
+import { Input } from "../../components/common/Input";
+import { SearchableSelect } from "../../components/common/SearchableSelect";
+import { showError } from "../../components/common/SweetAlert";
+import { Proveedor } from "../../types/proveedor";
+import { crearProveedor, actualizarProveedor } from "../../api/proveedorApi";
 
-// [TODO] Importar tipo y funciones de API
-// import { EntidadType } from "../../types/entidad";
-// import { crearEntidad, actualizarEntidad } from "../../api/entidadApi";
-
-// [TODO] Renombrar interfaz y props
-interface EntidadFormProps {
-  entidad?: any | null; // [TODO] Tipado: EntidadType | null
+interface ProveedoresFormProps {
+  proveedor?: Proveedor | null;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (proveedor?: Proveedor) => void;
 }
 
-// [TODO] Renombrar componente: EntidadForm
-export const EntidadForm = ({
-  entidad,
+export const ProveedoresForm = ({
+  proveedor,
   onClose,
   onSuccess,
-}: EntidadFormProps) => {
-  const isEditing = !!entidad;
+}: ProveedoresFormProps) => {
+  const isEditing = !!proveedor;
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // [OPCIONAL] Solo si hay campo password
 
-  // [TODO] Definir campos del formulario con valores iniciales
   const [formData, setFormData] = useState({
-    campo1: "", // [TODO] Renombrar con campos reales
-    campo2: "",
-    selectField: "", // [OPCIONAL] Para campos tipo select
-    // password: "", // [OPCIONAL] Solo si hay contraseña
-    status: true, // [OPCIONAL] Solo si hay estado activo/inactivo
+    razonSocial: "",
+    cuit: "",
+    telefono: "",
+    email: "",
+    direccion: "",
+    status: true,
   });
 
-  // Precarga de datos al editar
   useEffect(() => {
-    if (isEditing && entidad) {
-      // [TODO] Mapear cada campo del objeto al formData
+    if (isEditing && proveedor) {
       setFormData({
-        campo1: entidad.campo1 || "",
-        campo2: entidad.campo2 || "",
-        selectField: entidad.selectField || "",
-        // password: "",  // Siempre vacío en edición
-        status: entidad.status ?? true,
+        razonSocial: proveedor.razonSocial || "",
+        cuit: proveedor.cuit || "",
+        telefono: proveedor.telefono || "",
+        email: proveedor.email || "",
+        direccion: proveedor.direccion || "",
+        status: proveedor.status ?? true,
       });
     }
-  }, [entidad, isEditing]);
+  }, [proveedor, isEditing]);
+
+  const set = (field: keyof typeof formData, value: string | boolean) =>
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      // [TODO] Construir payload con los campos necesarios para el backend
-      const payload: Record<string, unknown> = {
-        campo1: formData.campo1,
-        campo2: formData.campo2,
-        selectField: formData.selectField,
+      const payload = {
+        razonSocial: formData.razonSocial.trim(),
+        cuit: formData.cuit.trim(),
+        telefono: formData.telefono.trim(),
+        email: formData.email.trim(),
+        direccion: formData.direccion.trim(),
         status: formData.status,
       };
 
-      // [OPCIONAL] Solo incluir password si tiene valor (en edición)
-      // if (formData.password) payload.password = formData.password;
-
-      if (isEditing && entidad) {
-        // [TODO] await actualizarEntidad(String(entidad.id), payload);
-        showSuccess("Actualizado", "Registro actualizado exitosamente");
+      if (isEditing && proveedor) {
+        const actualizado = await actualizarProveedor(
+          String(proveedor.id),
+          payload,
+        );
+        onSuccess(actualizado);
       } else {
-        // [TODO] await crearEntidad(payload);
-        showSuccess("Creado", "Registro creado exitosamente");
+        const nuevo = await crearProveedor(payload);
+        onSuccess(nuevo);
       }
-      onSuccess();
       onClose();
-    } catch (error) {
-      console.error("Error al guardar:", error);
-      showError(
-        "Error",
-        `No se pudo ${isEditing ? "actualizar" : "crear"} el registro`,
-      );
+    } catch (error: unknown) {
+      console.error("Error al guardar proveedor:", error);
+      const status = (error as { response?: { status?: number } })?.response
+        ?.status;
+      if (status === 409) {
+        showError("CUIT duplicado", "Ya existe un proveedor con ese CUIT.");
+      } else {
+        showError(
+          "Error",
+          `No se pudo ${isEditing ? "actualizar" : "crear"} el proveedor.`,
+        );
+      }
     } finally {
       setLoading(false);
     }
   };
-
-  // [OPCIONAL] Opciones para SearchableSelect
-  // const campo3Options = [
-  //   { value: "OPCION_A", label: "Opción A" },
-  //   { value: "OPCION_B", label: "Opción B" },
-  // ];
 
   const estadoOptions = [
     { value: "true", label: "Activo" },
     { value: "false", label: "Inactivo" },
   ];
 
-  // ============================================================
-  // ESTRUCTURA: form flex-col (se monta dentro de <Modal noPadding>)
-  // El header y el scroll los maneja el componente Modal.
-  // ============================================================
   return (
     <form onSubmit={handleSubmit} className="flex flex-col">
-      {/* === CUERPO SCROLLABLE === */}
       <div className="p-6 space-y-6 overflow-y-auto flex-1">
-        {/* --- Sección de campos --- */}
-        {/* Duplicar <section> para agregar más secciones */}
+        {/* Información principal */}
         <section>
           <h4 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-            {/* [TODO] Icono + Título de sección */}
-            {/* <IconX className="w-4 h-4" /> */}
-            Información General
+            <Building2 className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+            Información del Proveedor
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* --- Campo de texto simple --- */}
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                Campo 1 *
+                Razón Social <span className="text-red-500">*</span>
               </label>
               <Input
                 type="text"
-                value={formData.campo1}
-                onChange={(e) =>
-                  setFormData({ ...formData, campo1: e.target.value })
-                }
-                placeholder="Ingrese valor..."
+                value={formData.razonSocial}
+                onChange={(e) => set("razonSocial", e.target.value)}
+                placeholder="Ej: AutoParts S.A."
                 required
                 disabled={loading}
               />
             </div>
 
-            {/* --- Campo de texto secundario --- */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                Campo 2 {/* [TODO] Sin asterisco = opcional */}
+                <span className="flex items-center gap-1">
+                  <Hash className="w-3.5 h-3.5" />
+                  CUIT <span className="text-red-500">*</span>
+                </span>
               </label>
               <Input
                 type="text"
-                value={formData.campo2}
-                onChange={(e) =>
-                  setFormData({ ...formData, campo2: e.target.value })
-                }
-                placeholder="Ingrese valor..."
+                value={formData.cuit}
+                onChange={(e) => set("cuit", e.target.value)}
+                placeholder="Ej: 30-12345678-9"
+                required
                 disabled={loading}
               />
             </div>
 
-            {/* [OPCIONAL] Campo ancho completo con md:col-span-2 */}
-            {/* <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                Descripción
-              </label>
-              <textarea
-                rows={3}
-                value={formData.campo1}
-                onChange={(e) => setFormData({ ...formData, campo1: e.target.value })}
-                placeholder="Describe..."
-                className="w-full p-3 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
-                disabled={loading}
-              />
-            </div> */}
-
-            {/* [OPCIONAL] Campo contraseña con toggle de visibilidad */}
-            {/* <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                {isEditing ? "Contraseña (dejar en blanco para no cambiar)" : "Contraseña *"}
-              </label>
-              <div className="relative">
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required={!isEditing}
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div> */}
-
-            {/* [OPCIONAL] Select con búsqueda (enum / lista fija) */}
-            {/* <div>
-              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                Select Field *
-              </label>
-              <SearchableSelect
-                options={campo3Options}
-                value={formData.selectField}
-                onChange={(val) => setFormData({ ...formData, selectField: val })}
-                placeholder="Seleccione..."
-                disabled={loading}
-              />
-            </div> */}
-
-            {/* [OPCIONAL] Estado activo/inactivo */}
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                Estado *
+                Estado <span className="text-red-500">*</span>
               </label>
               <SearchableSelect
                 options={estadoOptions}
                 value={String(formData.status)}
-                onChange={(val) =>
-                  setFormData({ ...formData, status: val === "true" })
-                }
+                onChange={(val) => set("status", val === "true")}
                 placeholder="Seleccione un estado"
                 disabled={loading}
               />
@@ -236,18 +148,66 @@ export const EntidadForm = ({
           </div>
         </section>
 
-        {/* [OPCIONAL] Segunda sección */}
-        {/* <section>
-          <h4 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4">
-            Otra Sección
+        {/* Contacto */}
+        <section>
+          <h4 className="text-sm font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
+            <Phone className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+            Información de Contacto
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            ...campos...
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                <span className="flex items-center gap-1">
+                  <Mail className="w-3.5 h-3.5" />
+                  Correo Electrónico <span className="text-red-500">*</span>
+                </span>
+              </label>
+              <Input
+                type="email"
+                value={formData.email}
+                onChange={(e) => set("email", e.target.value)}
+                placeholder="proveedor@empresa.com"
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                <span className="flex items-center gap-1">
+                  <Phone className="w-3.5 h-3.5" />
+                  Teléfono <span className="text-red-500">*</span>
+                </span>
+              </label>
+              <Input
+                type="tel"
+                value={formData.telefono}
+                onChange={(e) => set("telefono", e.target.value)}
+                placeholder="Ej: +54 11 1234 5678"
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5" />
+                  Dirección
+                </span>
+              </label>
+              <Input
+                type="text"
+                value={formData.direccion}
+                onChange={(e) => set("direccion", e.target.value)}
+                placeholder="Ej: Av. Industrial 456, Buenos Aires"
+                disabled={loading}
+              />
+            </div>
           </div>
-        </section> */}
+        </section>
       </div>
 
-      {/* === FOOTER CON BOTONES (sticky al fondo del modal) === */}
       <div className="flex gap-3 p-6 border-t border-neutral-200 dark:border-neutral-700 shrink-0">
         <Button
           type="button"
@@ -268,10 +228,9 @@ export const EntidadForm = ({
             )
           }
           loading={loading}
-          className="flex-1"
+          className="flex-1 bg-primary-500 border-primary-500 text-white hover:bg-primary-600 dark:border-primary-400 dark:text-white dark:hover:bg-primary-700 transition-colors"
         >
-          {/* [TODO] Ajustar textos */}
-          {isEditing ? "Guardar Cambios" : "Crear Registro"}
+          {isEditing ? "Guardar Cambios" : "Crear Proveedor"}
         </Button>
       </div>
     </form>

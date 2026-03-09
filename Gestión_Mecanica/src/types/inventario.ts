@@ -13,6 +13,7 @@
 export interface Inventario {
   id: number;
   nombre: string;
+  codigo: string;
   descripcion: string;
   stock: number;
   precio: number;
@@ -21,8 +22,8 @@ export interface Inventario {
 }
 
 export interface CreateInventarioRequest {
-  id: number;
   nombre: string;
+  codigo: string;
   descripcion: string;
   stock: number;
   precio: number;
@@ -32,6 +33,7 @@ export interface CreateInventarioRequest {
 
 export interface UpdateInventarioRequest {
   nombre?: string;
+  codigo?: string;
   descripcion?: string;
   stock?: number;
   precio?: number;

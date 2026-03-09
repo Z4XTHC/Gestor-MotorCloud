@@ -19,7 +19,9 @@ public interface iInventarioService {
     public Inventario changeStatus(Long id, Boolean status);
 
     public List<Inventario> getInventariosByStatus(Boolean status);
-    
+
     public boolean existsByNombre(String nombre);
-    
+
+    public boolean existsByCodigo(String codigo);
+
 }

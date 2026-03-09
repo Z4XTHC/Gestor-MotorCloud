@@ -1,11 +1,13 @@
 package com.mangosoftware.motorCloud.Controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,17 +44,36 @@ public class InventarioController {
     public ResponseEntity<Inventario> createInventario(@Valid @RequestBody Inventario inventario,
             BindingResult result) {
         if (result.hasErrors()) {
-            return ResponseEntity.badRequest().build();
+            Map<String, String> errors = new HashMap<>();
+            for (FieldError error : result.getFieldErrors()) {
+                errors.put(error.getField(), error.getDefaultMessage());
+            }
+            return ResponseEntity.badRequest().body(null);
         }
-        return ResponseEntity.ok(inventarioService.createInventario(inventario));
+
+        if (inventarioService.existsByNombre(inventario.getNombre())) {
+            return ResponseEntity.status(409).body(null);
+        }
+
+        if (inventarioService.existsByCodigo(inventario.getCodigo())) {
+            return ResponseEntity.status(409).body(null);
+        }
+
+        Inventario nuevoInventario = inventarioService.createInventario(inventario);
+        return ResponseEntity.ok(nuevoInventario);
     }
 
     @PutMapping("/actualizar/{id}")
     public ResponseEntity<Inventario> updateInventario(@PathVariable Long id, @Valid @RequestBody Inventario inventario,
             BindingResult result) {
         if (result.hasErrors()) {
-            return ResponseEntity.badRequest().build();
+            Map<String, String> errors = new HashMap<>();
+            for (FieldError error : result.getFieldErrors()) {
+                errors.put(error.getField(), error.getDefaultMessage());
+            }
+            return ResponseEntity.badRequest().body(null);
         }
+
         Inventario actualizado = inventarioService.updateInventario(id, inventario);
         return actualizado != null ? ResponseEntity.ok(actualizado) : ResponseEntity.notFound().build();
     }
