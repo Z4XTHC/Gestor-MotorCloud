@@ -1,9 +1,10 @@
 import axios from "axios";
 
-// BaseURL toma la variable de entorno VITE_API_BASE_URL si está disponible,
-// sino usa http://localhost:8080 (donde corre el backend Spring Boot por defecto).
-const baseURL =
-  (import.meta.env as any).VITE_API_BASE_URL || "http://localhost:8081";
+// Si VITE_API_BASE_URL está vacío (""), axios usará rutas relativas → mismo origen
+// que es lo correcto cuando el frontend está servido desde Spring Boot.
+// Usar ?? en lugar de || para que "" (vacío) no caiga al fallback.
+const baseURL: string =
+  (import.meta.env.VITE_API_BASE_URL as string) ?? "http://localhost:8081";
 
 const axiosInstance = axios.create({
   baseURL,

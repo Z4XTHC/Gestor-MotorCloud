@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -25,7 +26,24 @@ public class WebSecurityConfig {
         @Bean
         BCryptPasswordEncoder passwordEncoder() {
                 return new BCryptPasswordEncoder();
+        }
 
+        /**
+         * Bypasea completamente Spring Security para recursos estáticos del frontend.
+         * Más robusto que permitAll() en el filter chain.
+         */
+        @Bean
+        WebSecurityCustomizer webSecurityCustomizer() {
+                return web -> web.ignoring()
+                                .requestMatchers(
+                                                "/assets/**",
+                                                "/favicon.png",
+                                                "/favicon.ico",
+                                                "/*.js",
+                                                "/*.css",
+                                                "/*.svg",
+                                                "/*.webmanifest",
+                                                "/manifest.json");
         }
 
         @Bean
@@ -39,21 +57,30 @@ public class WebSecurityConfig {
                                                 .configurationSource(request -> {
                                                         var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
                                                         corsConfiguration.setAllowedOriginPatterns(
-                                                                        java.util.List.of("http://localhost:*"));
+                                                                        java.util.List.of(
+                                                                                        "http://localhost:*",
+                                                                                        "http://127.0.0.1:*",
+                                                                                        "http://26.58.69.200:*",
+                                                                                        "https://*.ngrok-free.app"));
                                                         corsConfiguration.setAllowedMethods(java.util.List.of("GET",
-                                                                        "POST", "PUT", "DELETE", "OPTIONS"));
+                                                                        "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
                                                         corsConfiguration.setAllowedHeaders(java.util.List.of("*"));
+                                                        corsConfiguration.setExposedHeaders(
+                                                                        java.util.List.of("Set-Cookie"));
                                                         corsConfiguration.setAllowCredentials(true);
                                                         return corsConfiguration;
                                                 }))
                                 .authorizeHttpRequests((requests) -> requests
                                                 // Rutas API completamente públicas (sin autenticación)
                                                 .requestMatchers("/api/auth/**").permitAll()
+                                                .requestMatchers("/api/update/**").hasAuthority("ADMIN")
                                                 .requestMatchers("/api/usuario/**").hasAuthority("ADMIN")
                                                 .requestMatchers("/api/clientes/**").hasAnyAuthority("ADMIN", "USER")
-                                                // Recursos estáticos
+                                                // Recursos estáticos y frontend SPA
                                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**",
-                                                                "/static/**")
+                                                                "/static/**", "/assets/**", "/favicon.*",
+                                                                "/*.js", "/*.css", "/*.html", "/*.ico",
+                                                                "/*.png", "/*.svg", "/*.webmanifest")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .exceptionHandling(exception -> exception
