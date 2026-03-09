@@ -32,13 +32,13 @@ public class InventarioController {
         return ResponseEntity.ok(inventarioService.getAllInventarios());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/detalles/{id}")
     public ResponseEntity<Inventario> getInventarioById(@PathVariable Long id) {
         Inventario item = inventarioService.getInventarioById(id);
         return item != null ? ResponseEntity.ok(item) : ResponseEntity.notFound().build();
     }
 
-    @PostMapping
+    @PostMapping("/guardar")
     public ResponseEntity<Inventario> createInventario(@Valid @RequestBody Inventario inventario,
             BindingResult result) {
         if (result.hasErrors()) {
@@ -47,7 +47,7 @@ public class InventarioController {
         return ResponseEntity.ok(inventarioService.createInventario(inventario));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/actualizar/{id}")
     public ResponseEntity<Inventario> updateInventario(@PathVariable Long id, @Valid @RequestBody Inventario inventario,
             BindingResult result) {
         if (result.hasErrors()) {
@@ -63,7 +63,7 @@ public class InventarioController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/status")
+    @PutMapping("/cambiar-estado/{id}")
     public ResponseEntity<Inventario> changeStatus(@PathVariable Long id, @RequestBody Map<String, Boolean> status) {
         Boolean newStatus = status.get("status");
         if (newStatus == null) {
