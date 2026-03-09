@@ -9,6 +9,9 @@ import { Orders } from "./pages/Ordenes/Orders";
 import { Clients } from "./pages/Clientes/Clientes";
 import { VehiculosList } from "./pages/Vehiculos/Vehiculos";
 import { Login } from "./pages/Auth/Login";
+import { AcercaDe } from "./pages/AcercaDe";
+import { Calendario } from "./pages/Calendario/Calendario";
+import { Config } from "./pages/Config/Config";
 
 function AppContent() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -55,6 +58,8 @@ function AppContent() {
     switch (activeView) {
       case "dashboard":
         return <Dashboard />;
+      case "calendar":
+        return <Calendario />;
       case "inventory":
         return <Inventory />;
       case "orders":
@@ -75,16 +80,9 @@ function AppContent() {
           </main>
         );
       case "settings":
-        return (
-          <main className="p-4 lg:p-6" role="main">
-            <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-              Configuración
-            </h1>
-            <p className="text-neutral-600 dark:text-neutral-400 mt-2">
-              Módulo de configuración en desarrollo...
-            </p>
-          </main>
-        );
+        return <Config />;
+      case "about":
+        return <AcercaDe />;
       default:
         return <Dashboard />;
     }

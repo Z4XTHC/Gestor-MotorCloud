@@ -8,6 +8,7 @@ import {
   Settings,
   BarChart3,
   X,
+  Info,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -17,14 +18,39 @@ interface SidebarProps {
   onViewChange: (view: string) => void;
 }
 
-const menuItems = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "inventory", label: "Inventario", icon: Package },
-  { id: "orders", label: "Órdenes de Trabajo", icon: ClipboardList },
-  { id: "clients", label: "Clientes", icon: Users },
-  { id: "vehiculos", label: "Vehículos", icon: Car },
-  { id: "reports", label: "Reportes", icon: BarChart3 },
-  { id: "settings", label: "Configuración", icon: Settings },
+// Categories with menu items (keeps the original icons and labels)
+const menuCategories = [
+  {
+    id: "principal",
+    label: "Principal",
+    items: [
+      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { id: "calendar", label: "Calendario", icon: ClipboardList },
+    ],
+  },
+  {
+    id: "gestion",
+    label: "Gestión",
+    items: [
+      { id: "inventory", label: "Inventario", icon: Package },
+      { id: "orders", label: "Órdenes de Trabajo", icon: ClipboardList },
+      { id: "clients", label: "Clientes", icon: Users },
+      { id: "vehiculos", label: "Vehículos", icon: Car },
+    ],
+  },
+  {
+    id: "informes",
+    label: "Informes",
+    items: [{ id: "reports", label: "Reportes", icon: BarChart3 }],
+  },
+  {
+    id: "config",
+    label: "Configuración",
+    items: [
+      { id: "settings", label: "Configuración", icon: Settings },
+      { id: "about", label: "Acerca de la App", icon: Info },
+    ],
+  },
 ];
 
 export function Sidebar({
@@ -75,36 +101,54 @@ export function Sidebar({
           role="navigation"
           aria-label="Main navigation"
         >
-          <ul className="space-y-2">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeView === item.id;
+          <ul className="space-y-4">
+            {menuCategories.map((cat, idx) => (
+              <li key={cat.id}>
+                {idx > 0 && (
+                  <div className="px-3">
+                    <div className="border-t border-neutral-200 dark:border-neutral-800 my-2" />
+                  </div>
+                )}
+                {/* Category header */}
+                <div className="px-3 mb-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase">
+                  {cat.label}
+                </div>
 
-              return (
-                <li key={item.id}>
-                  <button
-                    onClick={() => {
-                      onViewChange(item.id);
-                      onClose(); // Close sidebar on mobile after selection
-                    }}
-                    className={`
-                      w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200
-                      ${
-                        isActive
-                          ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-r-2 border-primary-500"
-                          : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-100"
-                      }
-                    `}
-                    aria-current={isActive ? "page" : undefined}
-                  >
-                    <Icon
-                      className={`w-5 h-5 ${isActive ? "text-primary-500" : ""}`}
-                    />
-                    <span className="font-medium text-sm">{item.label}</span>
-                  </button>
-                </li>
-              );
-            })}
+                <ul className="space-y-2">
+                  {cat.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeView === item.id;
+
+                    return (
+                      <li key={item.id}>
+                        <button
+                          onClick={() => {
+                            onViewChange(item.id);
+                            onClose();
+                          }}
+                          className={`
+                            w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200
+                            ${
+                              isActive
+                                ? "bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-r-2 border-primary-500"
+                                : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-100"
+                            }
+                          `}
+                          aria-current={isActive ? "page" : undefined}
+                        >
+                          <Icon
+                            className={`w-5 h-5 ${isActive ? "text-primary-500" : ""}`}
+                          />
+                          <span className="font-medium text-sm">
+                            {item.label}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </li>
+            ))}
           </ul>
         </nav>
       </aside>

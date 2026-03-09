@@ -8,6 +8,17 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["lucide-react"],
   },
+  server: {
+    // En desarrollo: reenvía /api/** al backend Spring Boot
+    // Así VITE_API_BASE_URL puede quedar vacío en ambos entornos
+    proxy: {
+      "/api": {
+        target: "http://localhost:8081",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
   build: {
     // El build va directo a la carpeta static de Spring Boot
     outDir: path.resolve(
