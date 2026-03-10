@@ -10,12 +10,18 @@ import {
   Shield,
 } from "lucide-react";
 
-export function Config() {
+interface ConfigProps {
+  // Aquí podrías agregar props si necesitas pasar datos o funciones desde el padre
+  activeView: string;
+  onViewChange: (view: string) => void;
+}
+
+export function Config({ activeView, onViewChange }: ConfigProps) {
   const secciones = [
     {
-      id: "empresa",
-      titulo: "Empresa",
-      desc: "Nombre, logo, dirección y datos fiscales del taller.",
+      id: "general",
+      titulo: "General",
+      desc: "Razón Social, logo, dirección y datos fiscales del taller.",
       icon: <Building2 className="text-primary-500" />,
     },
     {
@@ -25,7 +31,7 @@ export function Config() {
       icon: <Users className="text-primary-500" />,
     },
     {
-      id: "plan",
+      id: "licencias",
       titulo: "Plan y Licencia",
       desc: "Estado de suscripción, facturación y límites del plan.",
       icon: <CreditCard className="text-primary-500" />,
@@ -60,7 +66,16 @@ export function Config() {
         {secciones.map((item) => (
           <button
             key={item.id}
-            className="group flex items-start gap-4 p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-soft hover:border-primary-300 dark:hover:border-primary-900/50 hover:shadow-medium transition-all text-left outline-none focus:ring-2 focus:ring-primary-500"
+            onClick={() => {
+              if (typeof onViewChange === "function") {
+                onViewChange(item.id);
+              }
+            }}
+            className={`group flex items-start gap-4 p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-soft hover:border-primary-300 dark:hover:border-primary-900/50 hover:shadow-medium transition-all text-left outline-none focus:ring-2 focus:ring-primary-500 ${
+              activeView === item.id
+                ? "border-primary-500 dark:border-primary-400"
+                : ""
+            }`}
           >
             <div className="p-3 rounded-xl bg-primary-50 dark:bg-primary-950/30 group-hover:scale-110 transition-transform">
               {React.cloneElement(item.icon, { size: 24 })}

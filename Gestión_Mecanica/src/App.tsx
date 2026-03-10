@@ -13,6 +13,9 @@ import { AcercaDe } from "./pages/AcercaDe";
 import { Calendario } from "./pages/Calendario/Calendario";
 import { Config } from "./pages/Config/Config";
 import { Proveedores } from "./pages/Proveedores/Proveedores";
+import { Usuarios } from "./pages/Usuarios/Usuarios";
+import { Licencia } from "./pages/Config/Licencia/Licencia";
+import { General } from "./pages/Config/General/General";
 
 function AppContent() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -71,6 +74,12 @@ function AppContent() {
         return <VehiculosList />;
       case "proveedores":
         return <Proveedores />;
+      case "usuarios":
+        return <Usuarios />;
+      case "licencias":
+        return <Licencia />;
+      case "general":
+        return <General />;
       case "reports":
         return (
           <main className="p-4 lg:p-6" role="main">
@@ -83,7 +92,7 @@ function AppContent() {
           </main>
         );
       case "settings":
-        return <Config />;
+        return <Config activeView={activeView} onViewChange={setActiveView} />;
       case "about":
         return <AcercaDe />;
       default:
