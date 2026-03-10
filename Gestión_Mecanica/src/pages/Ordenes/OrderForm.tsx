@@ -65,6 +65,7 @@ export function OrderForm({ onClose, onSuccess }: OrderFormProps) {
     telefono: "",
     direccion: "",
     dni: "",
+    status: true,
   });
   const [savingCliente, setSavingCliente] = useState(false);
 
@@ -81,6 +82,7 @@ export function OrderForm({ onClose, onSuccess }: OrderFormProps) {
     anio: "",
     color: "",
     patente: "",
+    status: true,
   });
   const [savingVehiculo, setSavingVehiculo] = useState(false);
   const [marcas, setMarcas] = useState<{ value: string; label: string }[]>([]);
@@ -133,7 +135,9 @@ export function OrderForm({ onClose, onSuccess }: OrderFormProps) {
     setLoadingMarcas(true);
     obtenerTodasLasMarcas()
       .then((list) =>
-        setMarcas(list.map((m) => ({ value: m.Make_Name, label: m.Make_Name }))),
+        setMarcas(
+          list.map((m) => ({ value: m.Make_Name, label: m.Make_Name })),
+        ),
       )
       .catch(() => {})
       .finally(() => setLoadingMarcas(false));
@@ -189,9 +193,13 @@ export function OrderForm({ onClose, onSuccess }: OrderFormProps) {
         telefono: "",
         direccion: "",
         dni: "",
+        status: true,
       });
-    } catch {
-      showError("Error", "No se pudo crear el cliente");
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { mensaje?: string } } })?.response?.data
+          ?.mensaje ?? "No se pudo crear el cliente";
+      showError("Error al guardar cliente", msg);
     } finally {
       setSavingCliente(false);
     }
@@ -225,7 +233,14 @@ export function OrderForm({ onClose, onSuccess }: OrderFormProps) {
       setVehiculos((prev) => [...prev, nuevo]);
       setSelectedVehiculo(nuevo);
       setShowNewVehiculo(false);
-      setVehiculoForm({ marca: "", modelo: "", anio: "", color: "", patente: "" });
+      setVehiculoForm({
+        marca: "",
+        modelo: "",
+        anio: "",
+        color: "",
+        patente: "",
+        status: true,
+      });
     } catch {
       showError("Error", "No se pudo crear el vehículo");
     } finally {
@@ -399,7 +414,9 @@ export function OrderForm({ onClose, onSuccess }: OrderFormProps) {
                   }
                   options={clienteOptions}
                   placeholder={
-                    loadingClientes ? "Cargando clientes..." : "Buscar cliente..."
+                    loadingClientes
+                      ? "Cargando clientes..."
+                      : "Buscar cliente..."
                   }
                   disabled={loadingClientes}
                 />
@@ -410,7 +427,9 @@ export function OrderForm({ onClose, onSuccess }: OrderFormProps) {
                     </p>
                     <p className="text-xs text-primary-700 dark:text-primary-300">
                       {selectedCliente.telefono}
-                      {selectedCliente.email ? ` · ${selectedCliente.email}` : ""}
+                      {selectedCliente.email
+                        ? ` · ${selectedCliente.email}`
+                        : ""}
                     </p>
                   </div>
                 )}
@@ -752,8 +771,8 @@ export function OrderForm({ onClose, onSuccess }: OrderFormProps) {
               <span>
                 Vehículo:{" "}
                 <span className="font-medium">
-                  {selectedVehiculo?.patente} —{" "}
-                  {selectedVehiculo?.marca} {selectedVehiculo?.modelo}
+                  {selectedVehiculo?.patente} — {selectedVehiculo?.marca}{" "}
+                  {selectedVehiculo?.modelo}
                 </span>
               </span>
             </div>
@@ -851,7 +870,11 @@ export function OrderForm({ onClose, onSuccess }: OrderFormProps) {
                     <input
                       value={l.descripcion}
                       onChange={(e) =>
-                        handleLineaChange(l.tempId, "descripcion", e.target.value)
+                        handleLineaChange(
+                          l.tempId,
+                          "descripcion",
+                          e.target.value,
+                        )
                       }
                       placeholder="Descripción del servicio"
                       className="flex-1 px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none"

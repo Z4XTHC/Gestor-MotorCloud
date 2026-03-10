@@ -48,6 +48,9 @@ export const SearchableSelect = ({
     );
 
   const selectedOption = options.find((opt) => opt.value === value);
+  // Para valores creados (creatable): si no está en options pero hay value, mostrarlo directamente
+  const displayLabel =
+    selectedOption?.label ?? (creatable && value ? value : null);
 
   // Cerrar dropdown al hacer clic fuera
   useEffect(() => {
@@ -99,9 +102,9 @@ export const SearchableSelect = ({
         }`}
       >
         <span
-          className={`flex-1 truncate ${selectedOption ? "" : "text-gray-400"}`}
+          className={`flex-1 truncate ${displayLabel ? "" : "text-gray-400"}`}
         >
-          {selectedOption ? selectedOption.label : placeholder}
+          {displayLabel ?? placeholder}
         </span>
         <div className="flex items-center gap-1 ml-2">
           {value && !required && !disabled && (

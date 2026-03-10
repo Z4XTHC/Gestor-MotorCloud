@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.mangosoftware.motorCloud.Model.Entity.Cliente;
 import com.mangosoftware.motorCloud.Model.Services.Interfaces.iClienteService;
-
-import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/api/clientes")
@@ -36,17 +32,14 @@ public class ClienteController {
     }
 
     @PostMapping("/guardar")
-    public ResponseEntity<Cliente> guardarCliente(@Valid @RequestBody Cliente cliente, BindingResult result) {
-        if (result.hasErrors()) {
-            Map<String, String> errors = new HashMap<>();
-            for (FieldError error : result.getFieldErrors()) {
-                errors.put(error.getField(), error.getDefaultMessage());
+    public ResponseEntity<?> guardarCliente(@RequestBody Cliente cliente) {
+        // Solo verificar duplicado si el DNI fue ingresado
+        if (cliente.getDni() != null && !cliente.getDni().isBlank()) {
+            if (clienteService.exitsByDni(cliente.getDni())) {
+                Map<String, String> error = new HashMap<>();
+                error.put("mensaje", "Ya existe un cliente con el DNI: " + cliente.getDni());
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
             }
-            return ResponseEntity.badRequest().body(null);
-        }
-
-        if (clienteService.exitsByDni(cliente.getDni())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
         }
 
         Cliente nuevoCliente = clienteService.createCliente(cliente);
@@ -54,16 +47,7 @@ public class ClienteController {
     }
 
     @PutMapping("/actualizar/{id}")
-    public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long id, @Valid @RequestBody Cliente cliente,
-            BindingResult result) {
-        if (result.hasErrors()) {
-            Map<String, String> errors = new HashMap<>();
-            for (FieldError error : result.getFieldErrors()) {
-                errors.put(error.getField(), error.getDefaultMessage());
-            }
-            return ResponseEntity.badRequest().body(null);
-        }
-
+    public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long id, @RequestBody Cliente cliente) {
         Cliente clienteActualizado = clienteService.updateCliente(id, cliente);
         if (clienteActualizado != null) {
             return ResponseEntity.ok(clienteActualizado);
@@ -74,15 +58,7 @@ public class ClienteController {
 
     @PutMapping("/cambiar-estado/{id}")
     public ResponseEntity<Cliente> cambiarEstadoCliente(@PathVariable Long id,
-            @RequestBody Map<String, Boolean> status, BindingResult result) {
-        if (result.hasErrors()) {
-            Map<String, String> errors = new HashMap<>();
-            for (FieldError error : result.getFieldErrors()) {
-                errors.put(error.getField(), error.getDefaultMessage());
-            }
-            return ResponseEntity.badRequest().body(null);
-        }
-
+            @RequestBody Map<String, Boolean> status) {
         Boolean nuevoStatus = status.get("status");
         Cliente clienteActualizado = clienteService.changeStatus(id, nuevoStatus);
         if (clienteActualizado != null) {
