@@ -158,6 +158,19 @@ export function Calendario() {
           <p className="text-neutral-500 dark:text-neutral-400 text-sm">
             Visualizá las Órdenes de Trabajo organizadas por fecha de entrega.
           </p>
+
+          {/* ── Leyenda de estados ── */}
+          <div className="flex flex-wrap gap-3 pt-5">
+            {Object.entries(ESTADO_CONFIG).map(([key, cfg]) => (
+              <div
+                key={key}
+                className="flex items-center gap-1.5 text-xs text-neutral-500"
+              >
+                <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot}`} />
+                {cfg.label}
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -380,19 +393,6 @@ export function Calendario() {
           cargarOrdenes();
         }}
       />
-
-      {/* ── Leyenda de estados ── */}
-      <div className="flex flex-wrap gap-3 pt-2">
-        {Object.entries(ESTADO_CONFIG).map(([key, cfg]) => (
-          <div
-            key={key}
-            className="flex items-center gap-1.5 text-xs text-neutral-500"
-          >
-            <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot}`} />
-            {cfg.label}
-          </div>
-        ))}
-      </div>
     </main>
   );
 }
