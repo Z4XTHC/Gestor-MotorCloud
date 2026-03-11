@@ -57,16 +57,24 @@ public class Empresa {
     @Email(message = "El formato del email no es válido")
     private String email;
 
+    private String ciudad;
+
+    private String provincia;
+
+    @NotBlank(message = "La dirección es obligatoria")
+    @Column(nullable = false)
     private String direccion;
 
     /**
      * Monotributo, Responsable Inscripto, etc.
      */
+    @Column(name = "categoria_fiscal", nullable = false, unique = true)
     private String categoriaFiscal;
 
     /**
      * Almacena la URL o ruta del logo.
      */
+    @Column(name = "logo_path")
     private String logoPath;
 
 }
