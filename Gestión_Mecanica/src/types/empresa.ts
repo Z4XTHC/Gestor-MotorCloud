@@ -18,7 +18,7 @@ export interface Empresa {
   email: string;
   ciudad: string;
   provincia: string;
-  dirección: string;
+  direccion: string;
   categoriaFiscal: string;
   logoPath: string;
 }
@@ -30,7 +30,7 @@ export interface UpdateEmpresaRequest {
   email?: string;
   ciudad?: string;
   provincia?: string;
-  dirección?: string;
+  direccion?: string;
   categoriaFiscal?: string;
   logoPath?: string;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Building2,
   Image as ImageIcon,
@@ -13,9 +13,67 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "../../../components/common/Button";
+import {
+  obtenerDatosEmpresa,
+  actualizarDatosEmpresa,
+} from "../../../api/empresaApi";
+import { Empresa } from "../../../types/empresa";
+import { showSuccess, showError } from "../../../components/common/SweetAlert";
 
 export function General() {
   const [activeTab, setActiveTab] = useState("generales");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Estado para los datos de la empresa
+  const [empresa, setEmpresa] = useState<Empresa>({
+    id: 1,
+    razonSocial: "",
+    datosFiscal: "",
+    telefono: "",
+    email: "",
+    ciudad: "",
+    provincia: "",
+    direccion: "",
+    categoriaFiscal: "",
+    logoPath: "",
+  });
+
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        const data = await obtenerDatosEmpresa();
+        if (data) setEmpresa(data);
+      } catch {
+        showError("Error", "Error al cargar los datos de la empresa");
+      } finally {
+        setLoading(false);
+      }
+    };
+    cargarDatos();
+  }, []);
+
+  // --- Manejador de cambios en inputs ---
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEmpresa((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // --- Guardar cambios ---
+  const handleGuardar = async () => {
+    setSaving(true);
+    try {
+      await actualizarDatosEmpresa(empresa);
+      showSuccess("Guardado", "Configuración guardada correctamente");
+    } catch {
+      showError("Error", "Error al actualizar la configuración");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading)
+    return <div className="p-8 text-center">Cargando configuración...</div>;
 
   return (
     <main className="p-4 lg:p-8 space-y-6 max-w-5xl mx-auto animate-in fade-in duration-500 text-neutral-900 dark:text-neutral-100">
@@ -29,8 +87,18 @@ export function General() {
             Gestiona la identidad de tu taller y personaliza tus documentos.
           </p>
         </div>
-        <Button className="flex gap-2 items-center bg-primary-500 hover:bg-primary-600 text-white border-none shadow-lg shadow-primary-500/20">
-          <Save size={18} /> Guardar Cambios
+        <Button
+          onClick={handleGuardar}
+          disabled={saving}
+          className="flex gap-2 items-center bg-primary-500 hover:bg-primary-600 text-white border-none shadow-lg shadow-primary-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {saving ? (
+            "Guardando..."
+          ) : (
+            <>
+              <Save size={18} /> Guardar Cambios
+            </>
+          )}
         </Button>
       </div>
 
@@ -89,59 +157,74 @@ export function General() {
           <section className="lg:col-span-2 space-y-6">
             <div className="p-6 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="block text-sm font-bold mb-1.5 flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm font-bold mb-1.5">
                   <Building2 size={14} className="text-primary-500" /> Razón
                   Social
                 </label>
                 <input
                   type="text"
+                  name="razonSocial"
+                  value={empresa.razonSocial}
+                  onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                   placeholder="Ej: Taller Mecánico Los Primos S.A."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold mb-1.5 flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm font-bold mb-1.5">
                   <FileText size={14} className="text-primary-500" /> Datos
                   Fiscales (CUIT/RUT/NIT)
                 </label>
                 <input
                   type="text"
+                  name="datosFiscal"
+                  value={empresa.datosFiscal}
+                  onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                   placeholder="30-12345678-9"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold mb-1.5 flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm font-bold mb-1.5">
                   <MapPin size={14} className="text-primary-500" /> Dirección
                 </label>
                 <input
                   type="text"
+                  name="direccion"
+                  value={empresa.direccion}
+                  onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                   placeholder="Calle Falsa 123, Ciudad"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold mb-1.5 flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm font-bold mb-1.5">
                   <MessageCircle size={14} className="text-primary-500" />{" "}
                   WhatsApp
                 </label>
                 <input
                   type="text"
+                  name="telefono"
+                  value={empresa.telefono}
+                  onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                   placeholder="+54 9 11 1234 5678"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold mb-1.5 flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm font-bold mb-1.5">
                   <Mail size={14} className="text-primary-500" /> E-Mail de
                   Contacto
                 </label>
                 <input
                   type="email"
+                  name="email"
+                  value={empresa.email}
+                  onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                   placeholder="contacto@taller.com"
                 />
