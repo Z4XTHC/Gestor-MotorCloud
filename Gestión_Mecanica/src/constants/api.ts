@@ -84,6 +84,12 @@ export const API_ENDPOINTS = {
     DELETE: (id: string) => `/api/proveedores/${id}`,
   },
 
+  // 🏢 Datos de la Empresa
+  EMPRESA: {
+    GET: "/api/empresa", // Siempre devuelve el registro con ID 1
+    UPDATE: "/api/empresa", // PUT con ID fijo 1 en el backend para evitar confusiones
+  },
+
   // 👑 Admin
   ADMIN: {
     LIST_ALL_CLIENTS: "/api/admin",
