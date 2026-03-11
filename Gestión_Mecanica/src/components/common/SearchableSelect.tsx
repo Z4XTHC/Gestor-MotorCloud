@@ -102,14 +102,14 @@ export const SearchableSelect = ({
         }`}
       >
         <span
-          className={`flex-1 truncate ${displayLabel ? "" : "text-gray-400"}`}
+          className={`flex-1 truncate ${displayLabel ? "" : "text-gray-400 dark:text-neutral-400"}`}
         >
           {displayLabel ?? placeholder}
         </span>
         <div className="flex items-center gap-1 ml-2">
           {value && !required && !disabled && (
             <X
-              className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 "
               onClick={handleClear}
             />
           )}
@@ -145,7 +145,7 @@ export const SearchableSelect = ({
           </div>
           <div className="overflow-y-auto max-h-48">
             {filteredOptions.length === 0 && !canCreate ? (
-              <div className="px-4 py-3 text-gray-500 dark:text-gray-400 text-center">
+              <div className="px-4 py-3 text-gray-500 dark:text-gray-400 text-center ">
                 No se encontraron resultados
               </div>
             ) : (

@@ -17,13 +17,13 @@ export const SearchInput: React.FC<SearchInputProps> = ({
 }) => {
   return (
     <div className={`relative ${className}`}>
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-neutral-400" />
       <Input
         type="text"
         value={value}
         onChange={(e) => onChange((e.target as HTMLInputElement).value)}
         placeholder={placeholder}
-        className="pl-10"
+        className="pl-10 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white dark:placeholder-neutral-400"
       />
     </div>
   );

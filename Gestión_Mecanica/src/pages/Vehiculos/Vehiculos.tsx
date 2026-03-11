@@ -245,12 +245,12 @@ export const VehiculosList = () => {
       </div>
 
       {/* === FILTROS === */}
-      <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 mb-4">
+      <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 mb-4 ">
         <SearchInput
           value={search}
           onChange={setSearch}
           placeholder="Buscar por marca, modelo, patente o propietario..."
-          className="flex-1"
+          className="flex-1 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-400"
         />
         <div className="flex gap-3">
           <SearchableSelect
@@ -258,14 +258,14 @@ export const VehiculosList = () => {
             onChange={setEstadoFilter}
             options={estadoOptions}
             placeholder="Todos los estados"
-            className="w-48"
+            className="w-48 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-400"
           />
           <SearchableSelect
             value={String(itemsPerPage)}
             onChange={(v) => setItemsPerPage(Number(v))}
             options={itemsPerPageOptions}
             placeholder="10"
-            className="w-20"
+            className="w-20 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white dark:placeholder-neutral-400"
           />
         </div>
       </div>
