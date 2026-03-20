@@ -21,6 +21,10 @@ export interface Empresa {
   direccion: string;
   categoriaFiscal: string;
   logoPath: string;
+  reparacionesTotales: number;
+  clientesSatisfechos: number;
+  anosExperiencia: number;
+  horariosAtencion: string;
 }
 
 export interface UpdateEmpresaRequest {
@@ -33,4 +37,8 @@ export interface UpdateEmpresaRequest {
   direccion?: string;
   categoriaFiscal?: string;
   logoPath?: string;
+  reparacionesTotales?: number;
+  clientesSatisfechos?: number;
+  anosExperiencia?: number;
+  horariosAtencion?: string;
 }

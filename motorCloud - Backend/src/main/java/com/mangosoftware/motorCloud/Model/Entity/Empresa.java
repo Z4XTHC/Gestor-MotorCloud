@@ -77,4 +77,42 @@ public class Empresa {
     @Column(name = "logo_path")
     private String logoPath;
 
+    /**
+     * Almacena las reparaciones Totales sumando los trabajos realizados en la
+     * empresa * para mostrar en el Dashboard y también en el Landing Page.
+     *
+     * Este campo se actualizará cada vez que se cree o actualice una orden de
+     * trabajo, sumando el total de la orden al campo reparacionesTotales.
+     */
+    @Column(name = "reparaciones_totales")
+    private Double reparacionesTotales;
+
+    /**
+     * Almacena la cantidad de años de experiencia de la empresa, para mostrar en el
+     * Dashboard y también en el Landing Page.
+     *
+     * El usuario ingresará un valor base y este debera ir actualizandose cada año,
+     * sumando 1 al campo añosExperiencia.
+     */
+    @Column(name = "anos_experiencia")
+    private Integer anosExperiencia;
+
+    /**
+     * Almacena la cantidad de clientes sastifechos, para mostrar en el Dashboard y
+     * también en el Landing Page.
+     *
+     * Este campo se actualizará cada vez que se cierre una orden de trabajo,
+     * sumando 1 al campo clientesSastifechos.
+     */
+    @Column(name = "clientes_sastifechos")
+    private Integer clientesSastifechos;
+
+    /**
+     * Almacena los horarios de atención de la empresa, para mostrar en el Dashboard
+     * y también en el Landing Page. El usuario ingresará un valor base y este se mostrará tal cual en el
+     * Frontend.
+     */
+    @Column(name = "horario_atencion")
+    private String horarioAtencion;
+
 }
