@@ -21,4 +21,8 @@ export interface Empresa {
   direccion: string;
   categoriaFiscal: string;
   logoPath: string;
+  reparacionesTotales: number;
+  clientesSatisfechos: number;
+  anosExperiencia: number;
+  horariosAtencion: string;
 }

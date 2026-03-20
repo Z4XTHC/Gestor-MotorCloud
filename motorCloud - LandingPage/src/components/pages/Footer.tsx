@@ -47,7 +47,7 @@ export const Footer = () => {
             </div>
             <p className="text-neutral-400 mb-4">
               Servicio técnico de excelencia con más de{" "}
-              {empresa?.añosExperiencia || "Cargando..."} años de experiencia en{" "}
+              {empresa?.anosExperiencia || "Cargando..."} años de experiencia en{" "}
               {empresa?.ciudad || "Cargando..."},{" "}
               {empresa?.provincia || "Cargando..."}.
             </p>
@@ -116,7 +116,7 @@ export const Footer = () => {
           <div>
             <h3 className="text-lg font-bold mb-4">Horarios</h3>
             <p className="text-neutral-400">
-              {empresa?.horarios || "Cargando..."}
+              {empresa?.horarioAtencion || "Cargando..."}
             </p>
           </div>
         </div>

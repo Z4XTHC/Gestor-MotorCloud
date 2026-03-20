@@ -28,7 +28,7 @@ export const About = () => {
               Sobre {empresa?.razonSocial || "Cargando..."}
             </h2>
             <p className="text-lg text-neutral-600 mb-6 leading-relaxed">
-              Con más de {empresa?.añosExperiencia || "Cargando..."} años de
+              Con más de {empresa?.anosExperiencia || "Cargando..."} años de
               trayectoria en {empresa?.ciudad || "Cargando..."},{" "}
               {empresa?.provincia || "Cargando..."}, nos hemos consolidado como
               el taller mecánico de referencia en la región. Nuestra pasión por
@@ -62,7 +62,7 @@ export const About = () => {
             />
             <div className="absolute -bottom-6 -right-6 bg-orange-500 text-white p-6 rounded-xl shadow-xl">
               <div className="text-4xl font-bold mb-1">
-                +{empresa?.añosExperiencia || "Cargando..."}
+                +{empresa?.anosExperiencia || "Cargando..."}
               </div>
               <div className="text-sm font-medium">Años de Experiencia</div>
             </div>

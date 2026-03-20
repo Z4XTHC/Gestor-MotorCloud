@@ -67,7 +67,7 @@ export const Hero = () => {
         </h1>
 
         <p className="text-lg sm:text-xl md:text-2xl text-neutral-100 mb-12 max-w-3xl mx-auto">
-          {empresa?.añosExperiencia || "Cargando..."} años brindando soluciones
+          {empresa?.anosExperiencia || "Cargando..."} años brindando soluciones
           profesionales para tu vehículo en {empresa?.ciudad || "Cargando..."},{" "}
           {empresa?.provincia || "Cargando..."}
         </p>

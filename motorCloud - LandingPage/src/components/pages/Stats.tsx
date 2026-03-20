@@ -13,14 +13,14 @@ export const Stats = () => {
     },
     {
       icon: Clock,
-      value: `${empresa?.añosExperiencia || "Cargando..."}`,
+      value: `${empresa?.anosExperiencia || "Cargando..."}`,
       label: "Años de Experiencia",
       color: "text-orange-500",
     },
     {
       icon: Users,
       value: `+${empresa?.clientesSatisfechos || "Cargando..."}`,
-      label: "Clientes Satisfechos",
+      label: "Clientes Satifechos",
       color: "text-orange-500",
     },
     {

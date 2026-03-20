@@ -11,6 +11,10 @@ import {
   Printer,
   LayoutTemplate,
   CheckCircle2,
+  Clock,
+  UserRoundCheck,
+  Wrench,
+  CalendarClock,
 } from "lucide-react";
 import { Button } from "../../../components/common/Button";
 import {
@@ -37,6 +41,10 @@ export function General() {
     direccion: "",
     categoriaFiscal: "",
     logoPath: "",
+    anosExperiencia: 0,
+    clientesSatisfechos: 0,
+    reparacionesTotales: 0,
+    horariosAtencion: "",
   });
 
   useEffect(() => {
@@ -227,6 +235,76 @@ export function General() {
                   onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                   placeholder="contacto@taller.com"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="flex items-center gap-2 text-sm font-bold mb-1.5">
+                  <FileText size={14} className="text-primary-500" /> Categoría
+                  Fiscal
+                </label>
+                <input
+                  type="text"
+                  name="categoriaFiscal"
+                  value={empresa.categoriaFiscal}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                  placeholder="Monotributo, Responsable Inscripto, etc."
+                />
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm font-bold mb-1.5">
+                  <Clock size={14} className="text-primary-500" /> Horarios de
+                  Atención
+                </label>
+                <input
+                  type="text"
+                  name="horariosAtencion"
+                  value={empresa.horariosAtencion}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                  placeholder="Ej: Lunes a Viernes: 8:00 - 18:00 | Sábados: 8:00 - 13:00"
+                />
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm font-bold mb-1.5">
+                  <CalendarClock size={14} className="text-primary-500" /> Años
+                  de Experiencia
+                </label>
+                <input
+                  type="number"
+                  name="anosExperiencia"
+                  value={empresa.anosExperiencia}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                  placeholder="Ej: 15"
+                />
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm font-bold mb-1.5">
+                  <Wrench size={14} className="text-primary-500" /> Reparaciones
+                  Totales
+                </label>
+                <input
+                  type="number"
+                  name="reparacionesTotales"
+                  value={empresa.reparacionesTotales}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                  placeholder="Ej: 1200"
+                />
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm font-bold mb-1.5">
+                  <UserRoundCheck size={14} className="text-primary-500" />{" "}
+                  Clientes Satisfechos
+                </label>
+                <input
+                  type="number"
+                  name="clientesSatisfechos"
+                  value={empresa.clientesSatisfechos}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                  placeholder="Ej: 850"
                 />
               </div>
             </div>

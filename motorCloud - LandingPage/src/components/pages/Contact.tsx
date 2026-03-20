@@ -29,7 +29,7 @@ export const Contact = () => {
     {
       icon: Clock,
       label: "Horarios",
-      value: empresa?.horarios || "Cargando...",
+      value: empresa?.horarioAtencion || "Cargando...",
     },
   ];
 

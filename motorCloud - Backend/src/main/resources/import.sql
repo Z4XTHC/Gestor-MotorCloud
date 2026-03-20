@@ -34,7 +34,11 @@ INSERT INTO
         `provincia`,
         `direccion`,
         `categoria_fiscal`,
-        `logo_path`
+        `logo_path`,
+        `anos_experiencia`,
+        `clientes_satisfechos`,
+        `reparaciones_totales`,
+        `horarios_atencion`
     )
 VALUES (
         1,
@@ -46,5 +50,9 @@ VALUES (
         'Chaco',
         'Calle Principal 123',
         'Responsable Monotributo',
-        '/path/to/logo.png'
+        '/path/to/logo.png',
+        1,
+        0,
+        0,
+        'Lunes a Viernes: 8:00 - 18:00, Sábado: 9:00 - 13:00'
     );

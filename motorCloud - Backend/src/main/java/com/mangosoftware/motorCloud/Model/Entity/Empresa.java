@@ -102,14 +102,15 @@ public class Empresa {
      * también en el Landing Page.
      *
      * Este campo se actualizará cada vez que se cierre una orden de trabajo,
-     * sumando 1 al campo clientesSastifechos.
+     * sumando 1 al campo clientesSatisfechos.
      */
-    @Column(name = "clientes_sastifechos")
-    private Integer clientesSastifechos;
+    @Column(name = "clientes_satisfechos")
+    private Integer clientesSatisfechos;
 
     /**
      * Almacena los horarios de atención de la empresa, para mostrar en el Dashboard
-     * y también en el Landing Page. El usuario ingresará un valor base y este se mostrará tal cual en el
+     * y también en el Landing Page. El usuario ingresará un valor base y este se
+     * mostrará tal cual en el
      * Frontend.
      */
     @Column(name = "horario_atencion")
