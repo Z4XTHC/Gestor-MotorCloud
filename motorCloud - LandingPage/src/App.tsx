@@ -1,14 +1,14 @@
-import { Navbar } from './components/Navbar';
-import { Hero } from './components/Hero';
-import { Stats } from './components/Stats';
-import { Services } from './components/Services';
-import { About } from './components/About';
-import { Brands } from './components/Brands';
-import { Testimonials } from './components/Testimonials';
-import { QuoteForm } from './components/QuoteForm';
-import { Contact } from './components/Contact';
-import { Footer } from './components/Footer';
-import { WhatsAppFAB } from './components/WhatsAppFAB';
+import { Navbar } from "./components/pages/Navbar";
+import { Hero } from "./components/pages/Hero";
+import { Stats } from "./components/pages/Stats";
+import { Services } from "./components/pages/Services";
+import { About } from "./components/pages/About";
+import { Brands } from "./components/pages/Brands";
+import { Testimonials } from "./components/pages/Testimonials";
+import { QuoteForm } from "./components/pages/QuoteForm";
+import { Contact } from "./components/pages/Contact";
+import { Footer } from "./components/pages/Footer";
+import { WhatsAppFAB } from "./components/pages/WhatsAppFAB";
 
 function App() {
   return (

@@ -13,4 +13,7 @@ public interface iOrdenRepository extends JpaRepository<Orden, Long> {
     // Buscar Ordenes por Estado
     List<Orden> findByStatus(Boolean status);
 
+    // Buscar Orden por Número de Orden
+    Orden findByNumeroOrden(String numeroOrden);
+
 }

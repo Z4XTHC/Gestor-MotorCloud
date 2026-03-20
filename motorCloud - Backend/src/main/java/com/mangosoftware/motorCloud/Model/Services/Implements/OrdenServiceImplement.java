@@ -99,4 +99,9 @@ public class OrdenServiceImplement implements iOrdenService {
         return ordenRepository.findByStatus(status);
     }
 
+    @Override
+    public Orden getOrdenByNumeroOrden(String numeroOrden) {
+        return ordenRepository.findByNumeroOrden(numeroOrden);
+    }
+
 }

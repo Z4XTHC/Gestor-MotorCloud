@@ -66,4 +66,14 @@ public class OrdenController {
         }
     }
 
+    @GetMapping("/seguimiento/{nroOrden}")
+    public ResponseEntity<Orden> obtenerSeguimientoOrden(@PathVariable String nroOrden) {
+        Orden orden = ordenService.getOrdenByNumeroOrden(nroOrden);
+        if (orden != null) {
+            return ResponseEntity.ok(orden);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }

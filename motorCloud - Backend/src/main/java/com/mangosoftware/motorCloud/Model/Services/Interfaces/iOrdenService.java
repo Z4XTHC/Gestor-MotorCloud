@@ -20,4 +20,6 @@ public interface iOrdenService {
 
     public List<Orden> getOrdenesByStatus(Boolean status);
 
+    public Orden getOrdenByNumeroOrden(String numeroOrden);
+
 }
