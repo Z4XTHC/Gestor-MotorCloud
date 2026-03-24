@@ -61,22 +61,7 @@ export async function verifyUser(id: string): Promise<any> {
   return data;
 }
 
-/**
- * Verifica si el token de autenticación actual es válido.
- * @returns Una promesa que se resuelve con los datos del usuario si el token es válido.
- */
-export async function checkAuth(): Promise<any> {
-  const { data } = await axiosInstance.get(API_ENDPOINTS.AUTH.CHECK);
-  return data;
-}
 
-/**
- * Cierra la sesión del usuario actual.
- * @returns Una promesa que se resuelve cuando la sesión se cierra.
- */
-export async function logout(): Promise<void> {
-  await axiosInstance.post(API_ENDPOINTS.AUTH.LOGOUT);
-}
 
 /**
  * Actualiza la contraseña de un usuario existente.

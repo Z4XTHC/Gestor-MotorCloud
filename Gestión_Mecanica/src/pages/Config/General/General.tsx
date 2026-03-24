@@ -44,7 +44,7 @@ export function General() {
     anosExperiencia: 0,
     clientesSatisfechos: 0,
     reparacionesTotales: 0,
-    horariosAtencion: "",
+    horarioAtencion: "",
   });
 
   useEffect(() => {
@@ -258,8 +258,8 @@ export function General() {
                 </label>
                 <input
                   type="text"
-                  name="horariosAtencion"
-                  value={empresa.horariosAtencion}
+                  name="horarioAtencion"
+                  value={empresa.horarioAtencion}
                   onChange={handleChange}
                   className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
                   placeholder="Ej: Lunes a Viernes: 8:00 - 18:00 | Sábados: 8:00 - 13:00"

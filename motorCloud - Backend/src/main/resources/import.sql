@@ -38,7 +38,7 @@ INSERT INTO
         `anos_experiencia`,
         `clientes_satisfechos`,
         `reparaciones_totales`,
-        `horarios_atencion`
+        `horario_atencion`
     )
 VALUES (
         1,

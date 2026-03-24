@@ -24,5 +24,5 @@ export interface Empresa {
   reparacionesTotales: number;
   clientesSatisfechos: number;
   anosExperiencia: number;
-  horariosAtencion: string;
+  horarioAtencion: string;
 }

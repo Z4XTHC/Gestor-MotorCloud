@@ -23,6 +23,7 @@ export const API_ENDPOINTS = {
     GET: (id: string) => `/api/usuarios/detalles/${id}`,
     UPDATE: (id: string) => `/api/usuarios/actualizar/${id}`,
     DELETE: (id: string) => `/api/usuarios/${id}`,
+    UPDATE_STATUS: (id: string) => `/api/usuarios/cambiar-estado/${id}`,
   },
 
   // 🏢 Clientes

@@ -4,7 +4,7 @@ import axios from "axios";
 // que es lo correcto cuando el frontend está servido desde Spring Boot.
 // Usar ?? en lugar de || para que "" (vacío) no caiga al fallback.
 const baseURL: string =
-  (import.meta.env.VITE_API_BASE_URL as string) ?? "http://localhost:8081";
+  (import.meta.env.VITE_API_BASE_URL as string) ?? "";
 
 const axiosInstance = axios.create({
   baseURL,

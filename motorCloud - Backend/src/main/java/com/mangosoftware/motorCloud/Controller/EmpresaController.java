@@ -16,7 +16,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/empresa")
-@CrossOrigin(origins = "*") // Recomendado para conectar con el Frontend de Motor Cloud
+@CrossOrigin(origins = "http://localhost:5174") // Recomendado para conectar con el Frontend de Motor Cloud
 public class EmpresaController {
 
     @Autowired

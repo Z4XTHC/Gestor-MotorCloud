@@ -24,7 +24,7 @@ export interface Empresa {
   reparacionesTotales: number;
   clientesSatisfechos: number;
   anosExperiencia: number;
-  horariosAtencion: string;
+  horarioAtencion: string;
 }
 
 export interface UpdateEmpresaRequest {
@@ -40,5 +40,5 @@ export interface UpdateEmpresaRequest {
   reparacionesTotales?: number;
   clientesSatisfechos?: number;
   anosExperiencia?: number;
-  horariosAtencion?: string;
+  horarioAtencion?: string;
 }

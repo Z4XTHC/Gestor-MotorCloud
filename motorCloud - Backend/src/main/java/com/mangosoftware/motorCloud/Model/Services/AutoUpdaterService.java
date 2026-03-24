@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -62,7 +63,8 @@ public class AutoUpdaterService {
      */
     public UpdateInfo fetchLatestRelease() throws Exception {
         String url = "https://api.github.com/repos/" + githubRepo + "/releases/latest";
-        HttpURLConnection conn = (HttpURLConnection) URI.create(url).toURL().openConnection();
+        URL githubUrl = URI.create(url).toURL();
+        HttpURLConnection conn = (HttpURLConnection) githubUrl.openConnection();
         conn.setRequestProperty("Accept", "application/vnd.github+json");
         conn.setRequestProperty("User-Agent", "motorCloud-updater");
         conn.setConnectTimeout(8000);
@@ -98,18 +100,23 @@ public class AutoUpdaterService {
     private void applyUpdate(UpdateInfo info) throws Exception {
         updateInProgress.set(true);
 
-        // Ruta del .jar actual
-        Path currentJar = Path.of(
-                AutoUpdaterService.class.getProtectionDomain()
-                        .getCodeSource().getLocation().toURI());
+        // Obtener la ruta del JAR actual de forma segura
+        String path = AutoUpdaterService.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+        if (System.getProperty("os.name").toLowerCase().contains("win") && path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        Path currentJar = Path.of(path);
 
+        // El nombre del JAR de la release puede ser diferente, pero launch.bat espera un nombre fijo.
+        // Asumimos que el JAR actual tiene el nombre esperado por launch.bat (ej: motorCloud.jar).
+        // Descargamos el nuevo JAR a un archivo temporal.
         Path tempJar = currentJar.resolveSibling("motorCloud-new.jar");
-        Path backupJar = currentJar.resolveSibling("motorCloud-backup.jar");
 
         log.info("[AutoUpdater] Descargando {} → {}", info.downloadUrl(), tempJar);
 
         // Descargar el nuevo .jar
-        HttpURLConnection conn = (HttpURLConnection) URI.create(info.downloadUrl()).toURL().openConnection();
+        URL downloadUrl = URI.create(info.downloadUrl()).toURL();
+        HttpURLConnection conn = (HttpURLConnection) downloadUrl.openConnection();
         conn.setConnectTimeout(60000);
         conn.setReadTimeout(60000);
 
@@ -118,41 +125,48 @@ public class AutoUpdaterService {
             in.transferTo(out);
         }
 
-        log.info("[AutoUpdater] Descarga completa. Preparando actualización...");
+        log.info("[AutoUpdater] Descarga completa. Preparando script de actualización...");
 
-        // Crear script que reemplaza el jar y reinicia (se ejecuta tras cerrar el
-        // proceso)
         boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
         Path updateScript = currentJar.resolveSibling(isWindows ? "do_update.bat" : "do_update.sh");
 
         if (isWindows) {
             String bat = "@echo off\r\n" +
-                    "timeout /t 3 /nobreak > nul\r\n" +
-                    "copy /Y \"" + tempJar + "\" \"" + currentJar + "\"\r\n" +
-                    "del \"" + tempJar + "\"\r\n" +
-                    "echo Actualización aplicada. Reiniciando...\r\n" +
-                    "start \"\" javaw -jar \"" + currentJar + "\"\r\n";
+                    "echo [AutoUpdater] Aplicando actualizacion...\r\n" +
+                    "rem Espera a que el proceso de Java se cierre completamente.\r\n" +
+                    "timeout /t 2 /nobreak > nul\r\n" +
+                    "rem Reemplaza el JAR antiguo con el nuevo. El nombre del JAR destino es el que espera launch.bat\r\n" +
+                    "move /Y \"" + tempJar.toAbsolutePath() + "\" \"" + currentJar.toAbsolutePath() + "\"\r\n" +
+                    "echo [AutoUpdater] Actualizacion lista. El sistema se reiniciara.\r\n" +
+                    "del \"%~f0\"\r\n"; // El script se borra a si mismo
             Files.writeString(updateScript, bat);
         } else {
+            // En Linux/macOS, es importante usar 'mv' para que la operación sea atómica.
             String sh = "#!/bin/bash\n" +
-                    "sleep 3\n" +
-                    "cp \"" + tempJar + "\" \"" + currentJar + "\"\n" +
-                    "rm \"" + tempJar + "\"\n" +
-                    "java -jar \"" + currentJar + "\" &\n";
+                    "echo \"[AutoUpdater] Aplicando actualizacion...\"\n" +
+                    "sleep 2\n" +
+                    "mv -f \"" + tempJar.toAbsolutePath() + "\" \"" + currentJar.toAbsolutePath() + "\"\n" +
+                    "echo \"[AutoUpdater] Actualizacion lista. El sistema se reiniciara.\"\n" +
+                    "rm -- \"$0\"\n"; // El script se borra a si mismo
             Files.writeString(updateScript, sh);
-            updateScript.toFile().setExecutable(true);
+            updateScript.toFile().setExecutable(true, true);
         }
 
-        // Lanzar el script y cerrar el proceso actual
+        log.info("[AutoUpdater] Lanzando script de actualización y reiniciando...");
+
+        // Lanzar el script en un proceso separado y desvinculado.
         if (isWindows) {
-            new ProcessBuilder("cmd", "/c", "start", "", updateScript.toString()).start();
+            // "start" en cmd es la forma de lanzar algo en segundo plano.
+            new ProcessBuilder("cmd", "/c", "start", "/min", updateScript.toAbsolutePath().toString()).start();
         } else {
-            new ProcessBuilder("bash", updateScript.toString()).start();
+            // Se necesita lanzar el script con "nohup" y "&" para que continue corriendo si el proceso padre muere.
+             new ProcessBuilder("nohup", "bash", updateScript.toAbsolutePath().toString(), "&").start();
         }
 
-        log.info("[AutoUpdater] Reiniciando para aplicar versión {}...", info.version());
-        // Pequeña pausa para que los logs se escriban
-        Thread.sleep(2000);
+        // Pequeña pausa para asegurar que los logs se escriben antes de salir.
+        Thread.sleep(1000);
+
+        // Salir con código 0. launch.bat/sh detectará esto y reiniciará la aplicación.
         System.exit(0);
     }
 
@@ -162,8 +176,9 @@ public class AutoUpdaterService {
     private boolean isNewerVersion(String current, String latest) {
         try {
             String[] c = current.split("\\.");
-            String[] l = latest.split("\\.");
-            for (int i = 0; i < Math.max(c.length, l.length); i++) {
+            String[] l = latest.replaceAll("[^0-9.]", "").split("\\.");
+            int length = Math.max(c.length, l.length);
+            for (int i = 0; i < length; i++) {
                 int cv = i < c.length ? Integer.parseInt(c[i]) : 0;
                 int lv = i < l.length ? Integer.parseInt(l[i]) : 0;
                 if (lv > cv)

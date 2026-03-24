@@ -76,6 +76,7 @@ public class WebSecurityConfig {
                                                 .requestMatchers("/api/update/**").hasAuthority("ADMIN")
                                                 .requestMatchers("/api/usuario/**").hasAuthority("ADMIN")
                                                 .requestMatchers("/api/clientes/**").hasAnyAuthority("ADMIN", "USER")
+                                                .requestMatchers("/api/empresa/**").hasAuthority("ADMIN")
                                                 // Recursos estáticos y frontend SPA
                                                 .requestMatchers("/css/**", "/js/**", "/images/**", "/webjars/**",
                                                                 "/static/**", "/assets/**", "/favicon.*",
